@@ -1,7 +1,7 @@
 #ifndef playHist1D_h
 #define playHist1D_h
 
-#include "menus_base.h"
+#include "menus.h"
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -15,7 +15,7 @@ using namespace std;
 
 //TH1::AddDirectory(kFALSE);
 
-class playHist1D : public menus_base {
+class playHist1D : public menus {
 
  public:
   playHist1D();
@@ -31,6 +31,8 @@ class playHist1D : public menus_base {
   TH1D* addHistForDiffFoldersFilesHists1D(vector<TFile*> vf, vector<TString> vdirname, vector<TString> vhname, vector<double> trigeff);
 
   TH1D* formatHist( TH1D* inh, double inscale, TString titlex, TString titley, double xlow, double xhigh, int rebin);
+  int findBinWithHighEdge( TAxis* axis, double edge);
+
   int getOverflowbin( TH1D *h, double xhigh );
   double getOverflowbinErr( TH1D *h, double xhigh );
   TH1D* MaxHist( vector<TH1D*> vinh);

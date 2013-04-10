@@ -18,7 +18,7 @@
 using namespace std;
 
 playHist1D::playHist1D():
-  linewidth(3),
+  linewidth(2),
   markersize(1)
 {}
 
@@ -156,7 +156,7 @@ TH1D* playHist1D::formatHist( TH1D* inh, double inscale, TString titlex, TString
     }
     h->SetBinError( overflowbin, overflowbinerr);
   }
-  h->GetXaxis()->SetRangeUser(xlow, xhigh);
+  h->GetXaxis()->SetRangeUser(xlow, xhigh-(h->GetBinWidth( findBinWithHighEdge(h->GetXaxis(), xhigh) ) ) );
   //  h->GetXaxis()->SetLimits(xlow, xhigh);
   h->GetYaxis()->SetTitle(titley);
   h->GetXaxis()->SetTitle(titlex);
@@ -169,6 +169,15 @@ TH1D* playHist1D::formatHist( TH1D* inh, double inscale, TString titlex, TString
   }
 
   return h;
+}
+
+int playHist1D::findBinWithHighEdge( TAxis* axis, double edge){
+  for( unsigned int i=0; i<=axis->GetNbins()+1; i++){
+    if( axis->GetBinLowEdge(i) == edge ){
+      return i-1;
+    }
+  }
+  return -1;
 }
 
 int playHist1D::getOverflowbin( TH1D *h, double xhigh ){
@@ -228,28 +237,6 @@ vector<TH1D*> playHist1D::invSortHists( vector<TH1D*> vinh){
   return revh;
 }
 
-vector<TH1D*> playHist1D::SortHists( vector<TH1D*> vinh){
-  vector<TH1D*> revh;
-  for( unsigned int i=0; i< vinh.size(); i++ ){
-    revh.push_back( vinh[i] );
-  }
-  for(unsigned int i=0; i< revh.size()-1; i++){
-    for( unsigned int j=i+1; j < revh.size(); j++ ){
-      //      double maxi=revh[i]->GetMaximum();
-      //      double maxj=revh[j]->GetMaximum();
-      double maxi=revh[i]->Integral(1,100000);
-      double maxj=revh[j]->Integral(1,100000);
-      if( maxi < maxj ){
-	TH1D *temp=revh[i];
-	revh[i]=revh[j];
-	revh[j]=temp;
-      }
-    }
-  }
-
-  return revh;
-}
-
 vector<unsigned int> playHist1D::invSortHists_index( vector<TH1D*> vinh){
   vector<unsigned int> revhi;
   vector<TH1D*> revh;
@@ -277,6 +264,28 @@ vector<unsigned int> playHist1D::invSortHists_index( vector<TH1D*> vinh){
   return revhi;
 }
 
+vector<TH1D*> playHist1D::SortHists( vector<TH1D*> vinh){
+  vector<TH1D*> revh;
+  for( unsigned int i=0; i< vinh.size(); i++ ){
+    revh.push_back( vinh[i] );
+  }
+  for(unsigned int i=0; i< revh.size()-1; i++){
+    for( unsigned int j=i+1; j < revh.size(); j++ ){
+      //      double maxi=revh[i]->Integral(1,100000);
+      //      double maxj=revh[j]->Integral(1,100000);
+      double maxi=revh[i]->GetMaximum();
+      double maxj=revh[j]->GetMaximum();
+      if( maxi < maxj ){
+	TH1D *temp=revh[i];
+	revh[i]=revh[j];
+	revh[j]=temp;
+      }
+    }
+  }
+
+  return revh;
+}
+
 vector<unsigned int> playHist1D::SortHists_index( vector<TH1D*> vinh){
   vector<unsigned int> revhi;
   vector<TH1D*> revh;
@@ -286,10 +295,10 @@ vector<unsigned int> playHist1D::SortHists_index( vector<TH1D*> vinh){
   }
   for(unsigned int i=0; i< revh.size()-1; i++){
     for( unsigned int j=i+1; j < revh.size(); j++ ){
-      double maxi=revh[i]->Integral(1,100000);
-      double maxj=revh[j]->Integral(1,100000);
-      //      double maxi=revh[i]->GetMaximum();
-      //      double maxj=revh[j]->GetMaximum();
+      //      double maxi=revh[i]->Integral(1,100000);
+      //      double maxj=revh[j]->Integral(1,100000);
+      double maxi=revh[i]->GetMaximum();
+      double maxj=revh[j]->GetMaximum();
       if( maxi < maxj ){
 	unsigned int temp=revhi[i];
 	revhi[i]=revhi[j];

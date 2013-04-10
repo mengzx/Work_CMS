@@ -6,7 +6,8 @@ void tdrstyle::setTDRStyle( TString digit ) {
 
   TStyle *tdrStyle = new TStyle("tdrStyle","Style for P-TDR");
   tdrStyle->SetPalette(1,0);
-  gStyle->SetPaintTextFormat(digit);
+  //gStyle->SetEndErrorSize(0);
+  tdrStyle->SetPaintTextFormat(digit);
 // For the canvas:
   tdrStyle->SetCanvasBorderMode(0);
   tdrStyle->SetCanvasColor(kWhite);
@@ -27,7 +28,7 @@ void tdrstyle::setTDRStyle( TString digit ) {
 
 // For the frame:
   tdrStyle->SetFrameBorderMode(0);
-  tdrStyle->SetFrameBorderSize(1);
+  tdrStyle->SetFrameBorderSize(2);
   tdrStyle->SetFrameFillColor(0);
   tdrStyle->SetFrameFillStyle(0);
   tdrStyle->SetFrameLineColor(1);
@@ -81,8 +82,8 @@ void tdrstyle::setTDRStyle( TString digit ) {
 // Margins:
   tdrStyle->SetPadTopMargin(0.1);
   tdrStyle->SetPadBottomMargin(0.13);
-  tdrStyle->SetPadLeftMargin(0.1);
-  tdrStyle->SetPadRightMargin(0.13);
+  tdrStyle->SetPadLeftMargin(0.13);
+  tdrStyle->SetPadRightMargin(0.05);
 
 // For the Global title:
   tdrStyle->SetOptTitle(0);
@@ -121,7 +122,7 @@ void tdrstyle::setTDRStyle( TString digit ) {
   tdrStyle->SetTickLength(0.03, "XYZ");
   tdrStyle->SetNdivisions(510, "XYZ");
   tdrStyle->SetPadTickX(1);  // To get tick marks on the opposite side of the frame
-  // tdrStyle->SetPadTickY(1);
+  tdrStyle->SetPadTickY(1);
 
 // Change for log plots:
   tdrStyle->SetOptLogx(0);

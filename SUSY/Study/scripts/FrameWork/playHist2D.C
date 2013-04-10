@@ -161,26 +161,31 @@ TH2D* playHist2D::addHistForDiffFoldersAndFiles_SubtrackHists2D(vector<TFile*> v
   return h;
 }
 
+
 // -----------------------------------------------------------------------------
 //
 TH2D* playHist2D::ReFillHist_AlphaTVSHT(TH2D* inh ){
-  int nxbins=12;
-  int nybins=8;
 
-  TH2D* h=(TH2D*)(inh->Clone("h"));
-  for( int ih=1; ih<nxbins+1; ih++){
+  TH2D* h=(TH2D*)( inh->Clone("h") );
+  TH1D* hp=(TH1D*)( h->ProjectionX() );
+    /*  for( int ih=1; ih<nxbins+1; ih++){
     double iaih=inh->Integral(ih, ih, 1, 100000);
-    h->SetBinContent(ih, 8, iaih);
+    h->SetBinContent(ih, nybins, iaih);
     double err2=0;
     for(int j=1; j<nybins+1; j++){
       err2=err2+( h->GetBinError( ih, j ) )*(h->GetBinError( ih, j ));
     }
-    h->SetBinError(ih, 8, sqrt(err2) );
+    h->SetBinError(ih, nybins, sqrt(err2) );
+    }*/
+
+  for( int ih=1; ih <= hp->GetNbinsX(); ih++){
+    h->SetBinContent( ih, h->GetNbinsY(), hp->GetBinContent( ih ) ); 
+    h->SetBinError( ih, h->GetNbinsY(), hp->GetBinError( ih ) ); 
   }
-  for( int ih=1; ih<nxbins+1; ih++ ){
-    for(int j=1; j<nybins; j++){
-      h->SetBinError(ih, j, 0 );
+  for( int ih=1; ih <= h->GetNbinsX(); ih++ ){
+    for(int j=1; j < h->GetNbinsY(); j++){
       h->SetBinContent( ih, j, 0 );
+      h->SetBinError( ih, j, 0 );
     }
   }
 

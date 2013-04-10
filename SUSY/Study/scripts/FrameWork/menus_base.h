@@ -17,5 +17,11 @@ class menus_base{
   double mcscale_;
   double ratioPlotErr_;
 
+  //for printTables
+  int lowHTEdge;
+  int highHTEdge;
+  int lowATEdge;
+  int highATEdge;
+
 }; //end of menus
 #endif

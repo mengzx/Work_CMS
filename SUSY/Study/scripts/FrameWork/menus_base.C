@@ -12,5 +12,8 @@ menus_base::menus_base(){
   drawOverflow_=false;
   ratioPlotErr_=0.1;
   mcscale_=1.;
+  //  normalEstimation_=true;
+  //  useCommonJson_=false;
+
 }
 
