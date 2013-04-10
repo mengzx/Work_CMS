@@ -45,10 +45,8 @@ class vectors{
   int nxbins;
   int nybins;
 
-  TH2D* ZinvPredBG();
-  TH2D* NormalWJPredBG();
-  TH2D* HT_ATTrigEff();
-  TH2D* SingleMuTrigEff();
+  bool useAllsamples_v;
+  std::vector<TString> usedSamples_v;
 
   std::vector<TString> MCvf_samples();
   std::vector<TFile*> MCvf_pushback( TString dir, TString dataset, TString sele, TString sTreeThr, bool separateSample, TString separateSampleName );

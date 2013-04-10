@@ -9,9 +9,9 @@ HEADERDIR	= ./
 
 MAKE	=	make
 
-object	=	menus.o vectors.o basicPlots.o printTables.o QCDk.o TrueWPt.o getPUWeight.o getTranslationFactor.o BGCompositions.o
+object	=	menus.o vectors.o plots.o ratioPlots.o dataMC.o printTables.o QCDk.o TrueWPt.o getPUWeight.o getTranslationFactor.o BGCompositions.o closureTests.o getRootFiles.o
 
-objectFramWork	=	tdrstyle.o playHist2D.o playHist1D.o project2DHists.o menus_base.o rootdict.o
+objectFramWork	=	tdrstyle.o playHist2D.o playHist1D.o playTables.o project2DHists.o menus_base.o rootdict.o basicPlots.o
 
 all: $(object) $(objectFramWork) main.exe
 .PHONY : all

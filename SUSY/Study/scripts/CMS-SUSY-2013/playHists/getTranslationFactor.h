@@ -19,14 +19,34 @@ class getTranslationFactor : public menus, public vectors{
   getTranslationFactor();
   ~getTranslationFactor(){;}
 
-  vector<TH2D*> PreTranslationFactor( int whichpart, bool MuAddOrNot, TString HTBins, bool separateSample, TString singleMCsample, int StartNJet, int NJet, TString MuonNumber, TString FolderLabel, bool notCutAlphaT, bool ATclosure  );
-  vector<TH2D*> TranslationFactor( int whichpart_i, int whichpart_j, bool MuAddOrNot, TString HTBins, bool separateSample, TString singleMCsample, int startNJet_i, int nJets_i, int startNJet_j, int nJets_j, TString MuonNumber_i, TString MuonNumber_j, TString FolderLabel_i, TString FolderLabel_j, bool notCutAlphaT_i, bool notCutAlphaT_j, bool ATclosure );
-  void Tables_iTojBJet( bool MuAddOrNot, TString HTBins, bool separateSample, TString singleMCsample, int startNJet_i, int nJets_i, int startNJet_j, int nJets_j, TString MuonNumber, TString FolderLabel );
-  void Tables_iTojJet( bool MuAddOrNot, TString HTBins, bool separateSample, TString singleMCsample, int startNJet, int nJets, TString MuonNumber_i, TString FolderLabel_i, TString FolderLabel_j );
-  void Tables_iTojSele( bool MuAddOrNot, TString HTBins, bool separateSample, TString singleMCsample, int startNJet, int nJets, TString MuonNumber_i, TString MuonNumber_j, TString FolderLabel );
+  TH2D* getMCHist( int whichpart, bool MuAddOrNot, TString HTBins, vector<TString> usedSamples, int startNJet, int nJets, TString MuonNumber, TString FolderLabel );
+  TH2D* getHadMC( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel );
+  TH2D* getControlMC_OneMuon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel );
+  TH2D* getControlMC_DiMuon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel );
+  TH2D* getControlMC_Photon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel );
+
+  TH2D* getDataHist( int whichpart, bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString MuonNumber, TString FolderLabel );
+  TH2D* getHadData( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel );
+  TH2D* getControlData_OneMuon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel );
+  TH2D* getControlData_DiMuon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel );
+  TH2D* getControlData_Photon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel );
+
+
+  void TranslationFactor_FromOneMuon( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel, int ATbin, int lowHTEdge, TString caption, int columnperrow );
+  void TranslationFactor_FromDiMuon( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel, int ATbin, int lowHTEdge, TString caption, int columnperrow );
+  void TranslationFactor_FromPhoton( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel, int ATbin, int lowHTEdge, TString caption, int columnperrow );
+
+
+
+  TH2D* Prediction_FromOneMuon( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel );
+  TH2D* Prediction_FromDiMuon( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel );
+  TH2D* Prediction_FromPhoton( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel );
+  void TranslationFactor_FromOneMuonDiMuon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel, int ATbin, int lowHTEdge, TString caption, int columnperrow );
+  void TranslationFactor_FromOneMuonPhoton( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel, int ATbin, int lowHTEdge, TString caption, int columnperrow );
+
 
   //  void getResults( TString closureTests, int iJetStart, int iJet_n, int jJetStart, int jJet_n, TString MuonNumber, int StartNJet, int NJet );
-  void getResults( TString closuretests );
+  void getResults();
   // private:
 
 }; //class getTranslationFactor

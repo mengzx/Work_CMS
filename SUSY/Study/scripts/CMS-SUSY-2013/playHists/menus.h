@@ -31,6 +31,8 @@ class menus{
   bool QCDkUsePosionErr_;
   bool plotRatio_;
   int totalEV_;
+  int lowHTEdge_;
+  int lowATEdge_;
 
   bool hasData_;
   bool hasMCtotal_;
@@ -86,6 +88,15 @@ class menus{
   bool hasT2cc220_145_;
   bool hasT2cc220_170_;
   bool hasT2cc220_195_;
+
+  bool hasT2cc_NoFilter_combined200_190_;
+  bool hasT2cc_NoFilter_combined200_180_;
+  bool hasT2cc_NoFilter_combined200_170_;
+  bool hasT2cc_NoFilter_combined200_160_;
+  bool hasT2cc_NoFilter_combined200_140_;
+  bool hasT2cc_NoFilter_combined200_120_;
+  bool hasT2cc_3jets_mStop_200_mLSP_190_;
+  bool hasT2cc_3jets_mStop_200_mLSP_120_;
 
   TString inidir_;
   TString subdir_;

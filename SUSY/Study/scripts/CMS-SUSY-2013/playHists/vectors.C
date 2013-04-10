@@ -21,6 +21,8 @@
 vectors::vectors(){
   nxbins=12;
   nybins=8;
+  xbinsv.clear();
+  ybinsv.clear();
   xbinsv.push_back(75.0); 
   xbinsv.push_back(125.0); 
   xbinsv.push_back(175.0); 
@@ -43,6 +45,9 @@ vectors::vectors(){
   ybinsv.push_back(0.54);
   ybinsv.push_back(0.55);
   ybinsv.push_back(0.56);
+
+  useAllsamples_v=true;
+  usedSamples_v.clear();
 }
 
 void vectors::closefV(){
@@ -113,6 +118,8 @@ TH1D* vectors::fillFitHist( TString sTreeThr, int startNjet, int nJets, TString 
     //  else if( FolderLable == "MoreThreeJet_" && startNjet == 2 && nJets == 1 ){ 
     //  else if( FolderLable == "MoreThreeJet_" && startNjet == 3 && nJets == 1 ){ 
 
+  menus *listmenus=new menus();
+
   if( sTreeThr == "100" || sTreeThr == "highHTBins" ){
     for( int i=2; i<9; i++ ){       dirname->SetBinContent(i+4, xbins[i]);  dirname->SetBinError(i+4, xbinserr[i]);  }
   }
@@ -126,7 +133,9 @@ TH1D* vectors::fillFitHist( TString sTreeThr, int startNjet, int nJets, TString 
   else if ( sTreeThr == "775" ){    dirname->SetBinContent(7+4, xbins[7]);  dirname->SetBinError(7+4, xbinserr[7]);  }
   else if ( sTreeThr == "875" ){    dirname->SetBinContent(8+4, xbins[8]);  dirname->SetBinError(8+4, xbinserr[8]);  }
   else if ( sTreeThr == "all" || sTreeThr == "allHTBins"){
-    for( int i=0; i<9; i++ ){      dirname->SetBinContent(i+4, xbins[i]);  dirname->SetBinError(i+4, xbinserr[i]);     }
+    int j=1;
+    if( listmenus->lowHTEdge_ <= 2250 ){ j=0; };
+    for( int i=j; i<9; i++ ){      dirname->SetBinContent(i+4, xbins[i]);  dirname->SetBinError(i+4, xbinserr[i]);     }
   } else if ( sTreeThr == "low" || sTreeThr == "lowHTBins" ){
     for( int i=1; i<3; i++ ){      dirname->SetBinContent(i+4, xbins[i]);  dirname->SetBinError(i+4, xbinserr[i]);     }
   } else if ( sTreeThr == "test" ){    dirname->SetBinContent(0+5, xbins[0]);  dirname->SetBinError(0+5, xbinserr[0]);     }
@@ -136,150 +145,37 @@ TH1D* vectors::fillFitHist( TString sTreeThr, int startNjet, int nJets, TString 
   } else { return 0; }
 }
 
-TH2D* vectors::ZinvPredBG(){
-  //Not the two bins (275GeV, >0.55) and (325GeV, >0.55) are from Z->mumu prediction while others are all from gammam+jets prediction. Because at high HT bins, Z->mumu statistic is limited, but with alphaT > 0.52 and < 0.55 bins, no out put from Z->mumu and gammajets prediction in the note, so set to zero
-  double xbins[NX];
-  double ybins[NY];
-  for( int i=0; i< xbinsv.size(); i++){
-    xbins[i]=xbinsv[i];
-  }
-  for( int i=0; i< ybinsv.size(); i++){
-    ybins[i]=ybinsv[i];
-  }
-  TH2D *Zinv=new TH2D( "Zinv","Prediced Z(#rightarrow#nu#nu) + jets background from Z(#rightarrow#mu#mu) + jets and #gamma + jets events", nxbins, xbins, nybins, ybins );
-  Zinv->Sumw2();
-  Zinv->SetBinContent(5, 8, 1458.15 );
-  Zinv->SetBinContent(6, 8, 602.57 );
-  Zinv->SetBinContent(7, 8, 398.90 );
-  Zinv->SetBinContent(8, 8, 159.80 );
-  Zinv->SetBinContent(9, 8, 52.18 );
-  Zinv->SetBinContent(10, 8, 24.81 );
-  Zinv->SetBinContent(11, 8, 9.18 );
-  Zinv->SetBinContent(12, 8, 7.04 );
-
-  Zinv->SetBinContent(9, 7, 0 );
-  Zinv->SetBinContent(10, 7, 0);
-  Zinv->SetBinContent(11, 7, 0);
-  Zinv->SetBinContent(12, 7, 0);
-
-  Zinv->SetBinContent(11, 6, 0);
-  Zinv->SetBinContent(12, 6, 0);
-
-  Zinv->SetBinError(5, 8, 159.59 );
-  Zinv->SetBinError(6, 8, 88.72 );
-  Zinv->SetBinError(7, 8, 18.16 );
-  Zinv->SetBinError(8, 8, 13.69 );
-  Zinv->SetBinError(9, 8, 6.17 );
-  Zinv->SetBinError(10, 8, 5.02 );
-  Zinv->SetBinError(11, 8, 3.27 );
-  Zinv->SetBinError(12, 8, 2.53 );
-
-  Zinv->SetBinError(9, 7, 0 );
-  Zinv->SetBinError(10, 7, 0 );
-  Zinv->SetBinError(11, 7, 0 );
-  Zinv->SetBinError(12, 7, 0 );
-
-  Zinv->SetBinError(11, 6, 0 );
-  Zinv->SetBinError(12, 6, 0 );
-  TH2D *reh=(TH2D*)(Zinv->Clone("reh"));
-  delete Zinv;
-  return reh;
-}
-
-TH2D* vectors::NormalWJPredBG(){
-
-  //Not the two bins (275GeV, >0.55) and (325GeV, >0.55) are from Z->mumu prediction while others are all from gammam+jets prediction. Because at high HT bins, Z->mumu statistic is limited, but with alphaT > 0.52 and < 0.55 bins, no out put from Z->mumu and gammajets prediction in the note, so set to zero
-  double xbins[NX];
-  double ybins[NY];
-  for( int i=0; i< xbinsv.size(); i++){
-    xbins[i]=xbinsv[i];
-  }
-  for( int i=0; i< ybinsv.size(); i++){
-    ybins[i]=ybinsv[i];
-  }
-  TH2D *Zinv=new TH2D( "Zinv1","Prediced Z(#rightarrow#nu#nu) + jets background from Z(#rightarrow#mu#mu) + jets and #gamma + jets events", nxbins, xbins, nybins, ybins );
-  Zinv->Sumw2();
-  Zinv->SetBinContent(5, 8, 1886.58 );
-  Zinv->SetBinContent(6, 8, 731.33 );
-  Zinv->SetBinContent(7, 8, 563.33 );
-  Zinv->SetBinContent(8, 8, 192.53 );
-  Zinv->SetBinContent(9, 8, 51.47 );
-  Zinv->SetBinContent(10, 8, 24.71 );
-  Zinv->SetBinContent(11, 8, 9.00 );
-  Zinv->SetBinContent(12, 8, 1.18 );
-
-  Zinv->SetBinContent(9, 7, 0 );
-  Zinv->SetBinContent(10, 7, 0);
-  Zinv->SetBinContent(11, 7, 0);
-  Zinv->SetBinContent(12, 7, 0);
-
-  Zinv->SetBinContent(11, 6, 0);
-  Zinv->SetBinContent(12, 6, 0);
-
-  Zinv->SetBinError(5, 8, 108.27 );
-  Zinv->SetBinError(6, 8, 65.58 );
-  Zinv->SetBinError(7, 8, 27.74 );
-  Zinv->SetBinError(8, 8, 20.67 );
-  Zinv->SetBinError(9, 8, 8.40 );
-  Zinv->SetBinError(10, 8, 6.45 );
-  Zinv->SetBinError(11, 8, 3.43 );
-  Zinv->SetBinError(12, 8, 1.62 );
-
-  Zinv->SetBinError(9, 7, 0 );
-  Zinv->SetBinError(10, 7, 0 );
-  Zinv->SetBinError(11, 7, 0 );
-  Zinv->SetBinError(12, 7, 0 );
-
-  Zinv->SetBinError(11, 6, 0 );
-  Zinv->SetBinError(12, 6, 0 );
-
-  TH2D *reh=(TH2D*)(Zinv->Clone("reh"));
-  delete Zinv;
-  return reh;
-}
-
-
 // -----------------------------------------------------------------------------
 //
 
 std::vector<TString> vectors::MCvf_samples(){
   std::vector<TString> res;
 
-  menus *listmenus=new menus();
-  if( listmenus->hasDY_ ){
-    res.push_back("DY_");
+  if( !useAllsamples_v && usedSamples_v.size() > 0 ){
+    for( unsigned int i=0; i< usedSamples_v.size(); i++ ){
+      res.push_back( usedSamples_v[i] );
+    }
+  } else {
+    menus *listmenus=new menus();
+    if( listmenus->hasDY_ ){           res.push_back("DY");        }
+    if( listmenus->hasTT_ ){           res.push_back("TT");        }
+    if( listmenus->hasWJ_ ){           res.push_back("WJ");        }
+    if( listmenus->hasSingleT_ ){      res.push_back("SingleT");   }
+    if( listmenus->hasDiBoson_ ){      res.push_back("DiBoson");   }
+    if( listmenus->hasTTZ_ ){          res.push_back("TTZ");       }
+    if( listmenus->hasZinv_ ){         res.push_back("Zinv");      }
+    if( listmenus->hasGJ_ ){           res.push_back("GJ");        }
   }
-  if( listmenus->hasTT_ ){
-    res.push_back("TT_");
-  }
-  if( listmenus->hasWJ_ ){
-    res.push_back("WJ_");
-  }
-  if( listmenus->hasSingleT_ ){
-    res.push_back("SingleT_");
-  }
-  if( listmenus->hasDiBoson_ ){
-    res.push_back("DiBoson_");
-  }
-  if( listmenus->hasTTZ_ ){
-    res.push_back("TTZ_");
-  }
-  if( listmenus->hasZinv_ ){
-    res.push_back("Zinv_");
-  }
-  if( listmenus->hasGJ_ ){
-    res.push_back("GJ_");
-  }
-
   return res;
 }
+
 std::vector<TFile*> vectors::MCvf_pushback( TString dir, TString dataset, TString sele, TString sTreeThr, bool separateSample, TString separateSampleName){
+  menus *listmenus=new menus();
   //  vector<TFile*> vf;
   for( unsigned int i=0; i< vf.size(); i++){
     vf_save.push_back(vf[i]);
   }
   vf.clear();
-
   if( sTreeThr == "100" || sTreeThr == "highHTBins" || sTreeThr == "375" || sTreeThr == "475" || sTreeThr == "575" || sTreeThr == "675" || sTreeThr == "775" || sTreeThr == "875"){
     if( separateSample ){
       TFile *f1=new TFile(dir+"/"+"NoSmear"+separateSampleName+"_"+dataset+"PUS7HigHTBins"+sele+".root");
@@ -287,7 +183,7 @@ std::vector<TFile*> vectors::MCvf_pushback( TString dir, TString dataset, TStrin
     } else {
       std::vector<TString> sam=MCvf_samples();
       for( unsigned int i=0; i < sam.size(); i++ ){
-	TFile *f1=new TFile( dir+"/"+"NoSmear"+ sam[i] + dataset + "PUS7HigHTBins" + sele + ".root" );
+	TFile *f1=new TFile( dir+"/"+"NoSmear"+ sam[i] + "_" + dataset + "PUS7HigHTBins" + sele + ".root" );
 	vf.push_back(f1);
       }
     }
@@ -298,7 +194,7 @@ std::vector<TFile*> vectors::MCvf_pushback( TString dir, TString dataset, TStrin
     } else {
       std::vector<TString> sam=MCvf_samples();
       for( unsigned int i=0; i < sam.size(); i++ ){
-	TFile *f1=new TFile(dir+"/"+"NoSmear"+ sam[i] + dataset+"PUS7LowHTBins"+sele+"325.root");
+	TFile *f1=new TFile(dir+"/"+"NoSmear"+ sam[i] + "_" + dataset+"PUS7LowHTBins"+sele+"325.root");
 	vf.push_back(f1);
       }
     }
@@ -309,7 +205,7 @@ std::vector<TFile*> vectors::MCvf_pushback( TString dir, TString dataset, TStrin
     } else {
       std::vector<TString> sam=MCvf_samples();
       for( unsigned int i=0; i < sam.size(); i++ ){
-	TFile *f1=new TFile(dir+"/"+"NoSmear"+ sam[i] + dataset+"PUS7LowHTBins"+sele+"275.root");
+	TFile *f1=new TFile(dir+"/"+"NoSmear"+ sam[i] + "_" + dataset+"PUS7LowHTBins"+sele+"275.root");
 	vf.push_back(f1);
       }
     }
@@ -320,16 +216,29 @@ std::vector<TFile*> vectors::MCvf_pushback( TString dir, TString dataset, TStrin
     } else {
       std::vector<TString> sam=MCvf_samples();
       for( unsigned int i=0; i < sam.size(); i++ ){
-	TFile *f1=new TFile(dir+"/"+"NoSmear"+ sam[i] + dataset+"PUS7LowHTBins"+sele+"225.root");
+	TFile *f1=new TFile(dir+"/"+"NoSmear"+ sam[i] + "_" + dataset+"PUS7LowHTBins"+sele+"225.root");
+	vf.push_back(f1);
+      }
+    }
+  } else if( sTreeThr == "0" ){
+    if( separateSample ){
+      TFile *f1=new TFile(dir+"/"+"NoSmear"+separateSampleName+"_"+dataset+"PUS7AllHTBins"+sele+"0.root");
+      vf.push_back(f1);
+    } else {
+      std::vector<TString> sam=MCvf_samples();
+      for( unsigned int i=0; i < sam.size(); i++ ){
+	TFile *f1=new TFile(dir+"/"+"NoSmear"+ sam[i] + "_" + dataset+"PUS7LowHTBins"+sele+"0.root");
 	vf.push_back(f1);
       }
     }
   } else if( sTreeThr == "all" || sTreeThr == "allHTBins"){
     if( separateSample ){
-      TFile *f0=new TFile(dir+"/"+"NoSmear"+separateSampleName+"_"+dataset+"PUS7LowHTBins"+sele+"225.root");
+      if( listmenus->lowHTEdge_ <= 2250 ){
+	TFile *f0=new TFile(dir+"/"+"NoSmear"+separateSampleName+"_"+dataset+"PUS7LowHTBins"+sele+"225.root");
+	vf.push_back(f0);
+      }
       TFile *f1=new TFile(dir+"/"+"NoSmear"+separateSampleName+"_"+dataset+"PUS7LowHTBins"+sele+"275.root");
       TFile *f2=new TFile(dir+"/"+"NoSmear"+separateSampleName+"_"+dataset+"PUS7LowHTBins"+sele+"325.root");
-      vf.push_back(f0);
       vf.push_back(f1);
       vf.push_back(f2);
       TFile *f3=new TFile(dir+"/"+"NoSmear"+separateSampleName+"_"+dataset+"PUS7HigHTBins"+sele+".root");
@@ -337,11 +246,13 @@ std::vector<TFile*> vectors::MCvf_pushback( TString dir, TString dataset, TStrin
     } else {
       std::vector<TString> sam=MCvf_samples();
       for( unsigned int i=0; i < sam.size(); i++ ){
-	TFile *f0=new TFile(dir+"/"+"NoSmear"+ sam[i] + dataset+"PUS7LowHTBins"+sele+"225.root");
-	TFile *f1=new TFile(dir+"/"+"NoSmear"+ sam[i] + dataset+"PUS7LowHTBins"+sele+"275.root");
-	TFile *f2=new TFile(dir+"/"+"NoSmear"+ sam[i] + dataset+"PUS7LowHTBins"+sele+"325.root");
-	TFile *f3=new TFile( dir+"/"+"NoSmear"+ sam[i] + dataset + "PUS7HigHTBins" + sele + ".root" );
-	vf.push_back(f0);
+	if( listmenus->lowHTEdge_ <= 2250 ){
+	  TFile *f0=new TFile(dir+"/"+"NoSmear"+ sam[i] + "_" + dataset+"PUS7LowHTBins"+sele+"225.root");
+	  vf.push_back(f0);
+	}
+	TFile *f1=new TFile(dir+"/"+"NoSmear"+ sam[i] + "_" + dataset+"PUS7LowHTBins"+sele+"275.root");
+	TFile *f2=new TFile(dir+"/"+"NoSmear"+ sam[i] + "_" + dataset+"PUS7LowHTBins"+sele+"325.root");
+	TFile *f3=new TFile( dir+"/"+"NoSmear"+ sam[i] + "_" + dataset + "PUS7HigHTBins" + sele + ".root" );
 	vf.push_back(f1);
 	vf.push_back(f2);
 	vf.push_back(f3);
@@ -356,8 +267,8 @@ std::vector<TFile*> vectors::MCvf_pushback( TString dir, TString dataset, TStrin
     } else {
       std::vector<TString> sam=MCvf_samples();
       for( unsigned int i=0; i < sam.size(); i++ ){
-	TFile *f1=new TFile(dir+"/"+"NoSmear"+ sam[i] + dataset+"PUS7LowHTBins"+sele+"275.root");
-	TFile *f2=new TFile(dir+"/"+"NoSmear"+ sam[i] + dataset+"PUS7LowHTBins"+sele+"325.root");
+	TFile *f1=new TFile(dir+"/"+"NoSmear"+ sam[i] + "_" + dataset+"PUS7LowHTBins"+sele+"275.root");
+	TFile *f2=new TFile(dir+"/"+"NoSmear"+ sam[i] + "_" + dataset+"PUS7LowHTBins"+sele+"325.root");
 	vf.push_back(f1);
 	vf.push_back(f2);
       }
@@ -372,6 +283,7 @@ std::vector<TFile*> vectors::MCvf_pushback( TString dir, TString dataset, TStrin
 
 std::vector<TFile*> vectors::Datavf_pushback( TString dir, TString dataset, TString sele, TString sTreeThr ){
 
+  menus *listmenus=new menus();
   //  vector<TFile*> vfdata;
   for( unsigned int i=0; i< vfdata.size(); i++){
     vfdata_save.push_back(vfdata[i]);
@@ -389,12 +301,17 @@ std::vector<TFile*> vectors::Datavf_pushback( TString dir, TString dataset, TStr
   } else if( sTreeThr == "60" ||  sTreeThr == "225"){
     TFile *f1=new TFile(dir+"/"+"Data"+dataset+"_PUS0LowHTBins"+sele+"225.root");
     vfdata.push_back(f1);
+  } else if( sTreeThr == "0"){
+    TFile *f1=new TFile(dir+"/"+"Data"+dataset+"_PUS0AllHTBins"+sele+"0.root");
+    vfdata.push_back(f1);
   } else if( sTreeThr == "all" || sTreeThr == "allHTBins"){
-    TFile *f0=new TFile(dir+"/"+"Data"+dataset+"_PUS0LowHTBins"+sele+"225.root");
+    if( listmenus->lowHTEdge_ <= 2250 ){
+      TFile *f0=new TFile(dir+"/"+"Data"+dataset+"_PUS0LowHTBins"+sele+"225.root");
+      vfdata.push_back(f0);
+    }
     TFile *f1=new TFile(dir+"/"+"Data"+dataset+"_PUS0LowHTBins"+sele+"275.root");
     TFile *f2=new TFile(dir+"/"+"Data"+dataset+"_PUS0LowHTBins"+sele+"325.root");
     TFile *f3=new TFile(dir+"/"+"Data"+dataset+"_PUS0HigHTBins"+sele+".root");
-    vfdata.push_back(f0);
     vfdata.push_back(f1);
     vfdata.push_back(f2);
     vfdata.push_back(f3);
@@ -441,8 +358,13 @@ std::vector<TString> vectors::dirName_pushback(TString label, TString sTreeThr){
     dirname.push_back(label+"200_275");
   } else if (  sTreeThr == "60" || sTreeThr == "225" ){
     dirname.push_back(label+"225_275");
+  } else if (  sTreeThr == "0" ){
+    dirname.push_back(label+"0");
   } else if ( sTreeThr == "all" || sTreeThr == "allHTBins"){
-    dirname.push_back(label+"225_275");
+    menus *listmenus=new menus();
+    if( listmenus->lowHTEdge_ <= 2250 ){
+      dirname.push_back(label+"225_275");
+    }
     dirname.push_back(label+"275_325");
     dirname.push_back(label+"325_375");
     dirname.push_back(label+"375_475");
@@ -547,11 +469,13 @@ std::vector<TString> vectors::getVdirname( TString HTBins, TString MuonNumber, T
 }
 
 std::vector<double> vectors::nominaltrigeff_pushback(TString sTreeThr){
+  menus *listmenus=new menus();
   std::vector<double> dirname;
-  double xbins[9]={ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
+  double xbins[10]={ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
   if( sTreeThr == "100" || sTreeThr == "highHTBins" ){
     for( int i=3; i<9; i++ ){      dirname.push_back(xbins[i]);    }
   }
+  else if ( sTreeThr == "0" ){      dirname.push_back(xbins[9]);  }
   else if ( sTreeThr == "60" || sTreeThr == "225" ){      dirname.push_back(xbins[0]);  }
   else if ( sTreeThr == "73" || sTreeThr == "275" ||  sTreeThr == "200" ){      dirname.push_back(xbins[1]);  }
   else if ( sTreeThr == "86" || sTreeThr == "325"){      dirname.push_back(xbins[2]);  }
@@ -562,20 +486,24 @@ std::vector<double> vectors::nominaltrigeff_pushback(TString sTreeThr){
   else if ( sTreeThr == "775" ){    dirname.push_back(xbins[7]); }
   else if ( sTreeThr == "875" ){    dirname.push_back(xbins[8]); }
   else if ( sTreeThr == "all" || sTreeThr == "allHTBins"){
-    for( int i=0; i<9; i++ ){      dirname.push_back(xbins[i]);    }
+    int j=1;
+    if( listmenus->lowHTEdge_ <= 2250 ){ j=0; };
+    for( int i=j; i<9; i++ ){      dirname.push_back(xbins[i]);    }
   } else if ( sTreeThr == "low" || sTreeThr == "lowHTBins" ){
     for( int i=1; i<3; i++ ){      dirname.push_back(xbins[i]);    }
-  } else if ( sTreeThr == "test" ){    dirname.push_back(0.88);    }
+  } else if ( sTreeThr == "test" ){    dirname.push_back(1.);    }
 
   return dirname;
 }
 
 std::vector<double> vectors::PhotonTrigEff_pushback(TString sTreeThr){
+  menus *listmenus=new menus();
   std::vector<double> dirname;
-  double xbins[9]={ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
+  double xbins[10]={ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
   if( sTreeThr == "100" || sTreeThr == "highHTBins" ){
     for( int i=3; i<9; i++ ){      dirname.push_back(xbins[i]);    }
   }
+  else if ( sTreeThr == "0" ){      dirname.push_back(xbins[9]);  }
   else if ( sTreeThr == "60" || sTreeThr == "225" ){      dirname.push_back(xbins[0]);  }
   else if ( sTreeThr == "73" || sTreeThr == "275" ||  sTreeThr == "200" ){      dirname.push_back(xbins[0]);  }
   else if ( sTreeThr == "86" || sTreeThr == "325"){      dirname.push_back(xbins[1]);  }
@@ -586,7 +514,9 @@ std::vector<double> vectors::PhotonTrigEff_pushback(TString sTreeThr){
   else if ( sTreeThr == "775" ){    dirname.push_back(xbins[7]); }
   else if ( sTreeThr == "875" ){    dirname.push_back(xbins[8]); }
   else if ( sTreeThr == "all" || sTreeThr == "allHTBins"){
-    for( int i=0; i<9; i++ ){      dirname.push_back(xbins[i]);    }
+    int j=1;
+    if( listmenus->lowHTEdge_ <= 2250 ){ j=0; };
+    for( int i=j; i<9; i++ ){      dirname.push_back(xbins[i]);    }
   } else if ( sTreeThr == "low" || sTreeThr == "lowHTBins" ){
     for( int i=1; i<3; i++ ){      dirname.push_back(xbins[i]);    }
   } else if ( sTreeThr == "test" ){    dirname.push_back(0.88);    }
@@ -596,10 +526,12 @@ std::vector<double> vectors::PhotonTrigEff_pushback(TString sTreeThr){
 
 std::vector<double> vectors::HTATTrigEff_pushback(TString sTreeThr){
   std::vector<double> dirname;
-  double xbins[9]={ 0.92, 0.92, 0.99, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
+  menus *listmenus=new menus();
+  double xbins[10]={ 0.82, 0.92, 0.99, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.82 };
   if( sTreeThr == "100" || sTreeThr == "highHTBins" ){
     for( int i=3; i<9; i++ ){      dirname.push_back(xbins[i]);    }
   }
+  else if ( sTreeThr == "0" ){      dirname.push_back(xbins[9]);  }
   else if ( sTreeThr == "60" || sTreeThr == "225" ){      dirname.push_back(xbins[0]);  }
   else if ( sTreeThr == "73" || sTreeThr == "275" ||  sTreeThr == "200" ){      dirname.push_back(xbins[1]);  }
   else if ( sTreeThr == "86" || sTreeThr == "325"){      dirname.push_back(xbins[2]);  }
@@ -610,7 +542,9 @@ std::vector<double> vectors::HTATTrigEff_pushback(TString sTreeThr){
   else if ( sTreeThr == "775" ){    dirname.push_back(xbins[7]); }
   else if ( sTreeThr == "875" ){    dirname.push_back(xbins[8]); }
   else if ( sTreeThr == "all" || sTreeThr == "allHTBins"){
-    for( int i=0; i<9; i++ ){      dirname.push_back(xbins[i]);    }
+    int j=1;
+    if( listmenus->lowHTEdge_ <= 2250 ){ j=0; };
+    for( int i=j; i<9; i++ ){      dirname.push_back(xbins[i]);    }
   } else if ( sTreeThr == "low" || sTreeThr == "lowHTBins" ){
     for( int i=1; i<3; i++ ){      dirname.push_back(xbins[i]);    }
   } else if ( sTreeThr == "test" ){    dirname.push_back(0.88);    }
@@ -619,11 +553,13 @@ std::vector<double> vectors::HTATTrigEff_pushback(TString sTreeThr){
 }
 
 std::vector<double> vectors::SingleMuTrigEff_pushback(TString sTreeThr){
+  menus *listmenus=new menus();
   std::vector<double> dirname;
-  double xbins[9]={ 0.88, 0.88, 0.88, 0.88, 0.88, 0.88, 0.88, 0.88, 0.88 };
+  double xbins[10]={ 0.88, 0.88, 0.88, 0.88, 0.88, 0.88, 0.88, 0.88, 0.88, 0.88 };
   if( sTreeThr == "100" || sTreeThr == "highHTBins" ){
     for( int i=3; i<9; i++ ){      dirname.push_back(xbins[i]);    }
   }
+  else if ( sTreeThr == "0" ){      dirname.push_back(xbins[9]);  }
   else if ( sTreeThr == "60" || sTreeThr == "225"){      dirname.push_back(xbins[0]);  }
   else if ( sTreeThr == "73" || sTreeThr == "275" ||  sTreeThr == "200" ){      dirname.push_back(xbins[1]);  }
   else if ( sTreeThr == "86" || sTreeThr == "325"){      dirname.push_back(xbins[2]);  }
@@ -634,7 +570,9 @@ std::vector<double> vectors::SingleMuTrigEff_pushback(TString sTreeThr){
   else if ( sTreeThr == "775" ){    dirname.push_back(xbins[7]); }
   else if ( sTreeThr == "875" ){    dirname.push_back(xbins[8]); }
   else if ( sTreeThr == "all" || sTreeThr == "allHTBins"){
-    for( int i=0; i<9; i++ ){      dirname.push_back(xbins[i]);    }
+    int j=1;
+    if( listmenus->lowHTEdge_ <= 2250 ){ j=0; };
+    for( int i=j; i<9; i++ ){      dirname.push_back(xbins[i]);    }
   } else if ( sTreeThr == "low" || sTreeThr == "lowHTBins" ){
     for( int i=1; i<3; i++ ){      dirname.push_back(xbins[i]);    }
   } else if ( sTreeThr == "test" ){    dirname.push_back(0.88);    }
@@ -643,11 +581,13 @@ std::vector<double> vectors::SingleMuTrigEff_pushback(TString sTreeThr){
 }
 
 std::vector<double> vectors::DiMuTrigEff_pushback(TString sTreeThr){
+  menus *listmenus=new menus();
   std::vector<double> dirname;
-  double xbins[9]={ 0.95, 0.95, 0.96, 0.96, 0.97, 0.97, 0.97, 0.98, 0.98 };
+  double xbins[10]={ 0.95, 0.95, 0.96, 0.96, 0.97, 0.97, 0.97, 0.98, 0.98, 0.90 };
   if( sTreeThr == "100" || sTreeThr == "highHTBins" ){
     for( int i=3; i<9; i++ ){      dirname.push_back(xbins[i]);    }
   }
+  else if ( sTreeThr == "0" ){      dirname.push_back(xbins[9]);  }
   else if ( sTreeThr == "60" || sTreeThr == "225" ){      dirname.push_back(xbins[0]);  }
   else if ( sTreeThr == "73" || sTreeThr == "275" ||  sTreeThr == "200" ){      dirname.push_back(xbins[1]);  }
   else if ( sTreeThr == "86" || sTreeThr == "325"){      dirname.push_back(xbins[2]);  }
@@ -658,7 +598,9 @@ std::vector<double> vectors::DiMuTrigEff_pushback(TString sTreeThr){
   else if ( sTreeThr == "775" ){    dirname.push_back(xbins[7]); }
   else if ( sTreeThr == "875" ){    dirname.push_back(xbins[8]); }
   else if ( sTreeThr == "all" || sTreeThr == "allHTBins"){
-    for( int i=0; i<9; i++ ){      dirname.push_back(xbins[i]);    }
+    int j=1;
+    if( listmenus->lowHTEdge_ <= 2250 ){ j=0; };
+    for( int i=j; i<9; i++ ){      dirname.push_back(xbins[i]);    }
   } else if ( sTreeThr == "low" || sTreeThr == "lowHTBins" ){
     for( int i=1; i<3; i++ ){      dirname.push_back(xbins[i]);    }
   } else if ( sTreeThr == "test" ){    dirname.push_back(0.88);    }

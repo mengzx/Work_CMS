@@ -13,20 +13,117 @@
 
 #include "tdrstyle.h"
 #include "playHist2D.h"
-#include "printTables.h"
+#include "playTables.h"
 using namespace std;
 
 
 getTranslationFactor::getTranslationFactor()
 {}
 
+TH2D* getTranslationFactor::getMCHist( int whichpart, bool MuAddOrNot, TString HTBins, vector<TString> usedSamples, int startNJet, int nJets, TString MuonNumber, TString FolderLabel ){
+
+  std::tr1::tuple< TString, TString, vector<TFile*>, vector<TFile*> > tupleres=getStuff( whichpart, MuAddOrNot, HTBins, true, "" );
+  //  vector<TFile*> Datavf=tr1::get<2>(tupleres);
+  //  vector<TFile*> MCvf=std::tr1::get<3>(tupleres);
+  TString hnamepart=std::tr1::get<1>(tupleres);
+  vector<TString> vhname;
+  if( startNJet == 0 ){
+    vhname.push_back("AlphaT_vs_HT" + hnamepart + "all");
+  } else {
+    for( int i=startNJet; i< startNJet+nJets; i++ ){
+      vhname.push_back( Form( "AlphaT_vs_HT" + hnamepart + "%d", i ) );
+    }
+  }
+  std::tr1::tuple< double,  std::vector<double> > scales=getScales( whichpart, HTBins, MuonNumber );
+  vector<double> trigeff=tr1::get<1> (scales);
+  double scalein = tr1::get<0> (scales);
+  vector<TString> dirName=getVdirname( HTBins, MuonNumber, FolderLabel );
+
+  TH2D* vh=0;
+
+  playHist2D factor=playHist2D();
+  for( unsigned int i=0; i<usedSamples.size(); i++ ){
+    std::tr1::tuple< TString, TString, vector<TFile*>, vector<TFile*> > tuple_s=getStuff( whichpart, MuAddOrNot, HTBins, true, usedSamples[i] );
+    vector<TFile*> MCvf=std::tr1::get<3>(tuple_s);
+    TH2D *mch_x=factor.addHistForDiffFoldersFilesHists2D(MCvf, dirName, vhname, trigeff );
+    TH2D *mch=factor.formatHist( mch_x, scalein, (TString)(""), (TString)(""), 0., 10000., 0., 10000., 1, 1, 0 );
+    TH2D* mchin=0;
+    if( whichpart != 1 && notCutAlphaT_ ){
+      mchin=factor.ReFillHist_AlphaTVSHT( mch );
+    } else {
+      mchin=(TH2D*)(mch->Clone("mchin"));
+    }
+    if( usedSamples[i] == "WJ" && useLOXSWJ_ ){ mchin->Scale( 0.894 ); }
+    if( usedSamples[i] == "TT" && useLOXSTT_ ){ mchin->Scale( 1.11 ); }
+    if( usedSamples[i] == "GJ" && useLOXSGJ_ ){ mchin->Scale( 0.894 ); }
+    if( usedSamples[i] == "DY" && useLOXSDY_ ){ mchin->Scale( 0.894 ); }
+    if( usedSamples[i] == "Zinv" && useLOXSZinv_ ){ mchin->Scale( 0.894 ); }
+    if( i == 0){
+      vh=(TH2D*)(mchin->Clone("vh"));
+    }
+    if( i > 0 ){
+      vh->Add( vh, mchin );
+    }
+  }
+
+  return vh;
+
+}
+
 // -----------------------------------------------------------------------------
 //
-vector<TH2D*> getTranslationFactor::PreTranslationFactor( int whichpart, bool MuAddOrNot, TString HTBins, bool separateSample, TString singleMCsample, int startNJet, int nJets, TString MuonNumber, TString FolderLabel, bool notCutAlphaT, bool ATclosure ){
+TH2D* getTranslationFactor::getHadMC( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel ){
+  useAllsamples_v=useAllsamples;
+  usedSamples_v=usedSamples;
 
-  std::tr1::tuple< TString, TString, vector<TFile*>, vector<TFile*> > tupleres=getStuff( whichpart, MuAddOrNot, HTBins, separateSample, singleMCsample );
+  TH2D* mch=getMCHist( 1, MuAddOrNot, HTBins, usedSamples_v, startNJet, nJets, "", FolderLabel );
+
+  return mch;
+}
+
+
+TH2D* getTranslationFactor::getControlMC_OneMuon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel ){
+
+  useAllsamples_v=true;
+  vector<TString> usedSamples=MCvf_samples();
+  TH2D* mch=getMCHist( 2, MuAddOrNot, HTBins, usedSamples, startNJet, nJets, "OneMuon_", FolderLabel );
+
+  return mch;
+}
+
+
+
+
+TH2D* getTranslationFactor::getControlMC_DiMuon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel ){
+
+  useAllsamples_v=true;
+  vector<TString> usedSamples=MCvf_samples();
+  TH2D* mch=getMCHist( 2, MuAddOrNot, HTBins, usedSamples, startNJet, nJets, "DiMuon_", FolderLabel );
+  return mch;
+}
+
+
+TH2D* getTranslationFactor::getControlMC_Photon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel ){
+
+  useAllsamples_v=false;
+  usedSamples_v.clear();
+  usedSamples_v.push_back("GJ");
+
+  TH2D* mch=getMCHist( 3, MuAddOrNot, HTBins, usedSamples_v, startNJet, nJets, "Photon_", FolderLabel );
+  return mch;
+}
+
+
+
+
+// -----------------------------------------------------------------------------
+//
+
+TH2D* getTranslationFactor::getDataHist( int whichpart, bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString MuonNumber, TString FolderLabel ){
+
+  std::tr1::tuple< TString, TString, vector<TFile*>, vector<TFile*> > tupleres=getStuff( whichpart, MuAddOrNot, HTBins, true, "" );
   vector<TFile*> Datavf=tr1::get<2>(tupleres);
-  vector<TFile*> MCvf=std::tr1::get<3>(tupleres);
+  //  vector<TFile*> MCvf=std::tr1::get<3>(tupleres);
   TString hnamepart=std::tr1::get<1>(tupleres);
   vector<TString> vhname;
   if( startNJet == 0 ){
@@ -38,328 +135,846 @@ vector<TH2D*> getTranslationFactor::PreTranslationFactor( int whichpart, bool Mu
   }
 
   std::tr1::tuple< double,  std::vector<double> > scales=getScales( whichpart, HTBins, MuonNumber );
-  vector<double> trigeff=tr1::get<1> (scales);
   double scalein = tr1::get<0> (scales);
   vector<double> datatrigeff=nominaltrigeff_pushback(HTBins);
   vector<TString> dirName=getVdirname( HTBins, MuonNumber, FolderLabel );
 
   playHist2D factor=playHist2D();
+  TH2D *datah=factor.addHistForDiffFoldersFilesHists2D(Datavf, dirName, vhname, datatrigeff );
 
-  vector<TH2D*> reh2d;
-  TH2D* datah=0;
-  TH2D* mch=0;
-  if (Datavf.size() > 0) { datah=factor.addHistForDiffFoldersFilesHists2D(Datavf, dirName, vhname, datatrigeff ); }
-  if (MCvf.size() > 0) { mch=factor.addHistForDiffFoldersFilesHists2D(MCvf, dirName, vhname, trigeff ); mch->Scale(scalein); }
-
-  if( ATclosure ){
-    if( datah != 0 ){
-      TH2D* vh_iclone=(TH2D*)(datah->Clone("vh_iclone") );
-      datah=factor.ReFillHist_high( vh_iclone, 0.55 );
-    }
-    
-    if( mch != 0 ){
-      TH2D* vh_iclone=(TH2D*)(mch->Clone("vh_iclone") );
-      mch=factor.ReFillHist_high( vh_iclone, 0.55 );
-    }
-    
-  } else if( notCutAlphaT_ && notCutAlphaT ){
-    if( datah != 0){
-      TH2D* vh_iclone=(TH2D*)(datah->Clone("vh_iclone") );
-      datah=factor.ReFillHist_AlphaTVSHT( vh_iclone );
-    }
-    if( mch != 0){
-      TH2D* vh_iclone=(TH2D*)(mch->Clone("vh_iclone") );
-      mch=factor.ReFillHist_AlphaTVSHT( vh_iclone );
-    }
+  TH2D *datahin=0;
+  if( whichpart != 1 && notCutAlphaT_ ){
+    datahin=factor.ReFillHist_AlphaTVSHT( datah );
+  } else {
+    datahin=(TH2D*)(datah->Clone("datahin"));
   }
-  reh2d.push_back(datah);
-  reh2d.push_back(mch);
 
-  return reh2d;
+
+  return datahin;
+
 }
 
-
+TH2D* getTranslationFactor::getHadData( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel ){
+  TH2D *datah = getDataHist( 1, MuAddOrNot, HTBins, startNJet, nJets, "", FolderLabel );
+  return datah;
+}
 
 
 // -----------------------------------------------------------------------------
 //
-vector<TH2D*> getTranslationFactor::TranslationFactor( int whichpart_i, int whichpart_j, bool MuAddOrNot, TString HTBins, bool separateSample, TString singleMCsample, int startNJet_i, int nJets_i, int startNJet_j, int nJets_j, TString MuonNumber_i, TString MuonNumber_j, TString FolderLabel_i, TString FolderLabel_j, bool notCutAlphaT_i, bool notCutAlphaT_j, bool ATclosure ){
-  if( MuonNumber_i == "" ) whichpart_i=1;
-  if( MuonNumber_j == "" ) whichpart_j=1;
+TH2D* getTranslationFactor::getControlData_OneMuon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel ){
 
-  vector<TH2D*> vh_i=PreTranslationFactor( whichpart_i, MuAddOrNot, HTBins, separateSample, singleMCsample, startNJet_i, nJets_i, MuonNumber_i, FolderLabel_i, notCutAlphaT_i, ATclosure );
-  vector<TH2D*> vh_j=PreTranslationFactor( whichpart_j, MuAddOrNot, HTBins, separateSample, singleMCsample, startNJet_j, nJets_j, MuonNumber_j, FolderLabel_j, notCutAlphaT_j, ATclosure );
+  TH2D *datah = getDataHist( 2, MuAddOrNot, HTBins, startNJet, nJets, "OneMuon_", FolderLabel );
+  return datah;
+}
 
-  playHist2D factor=playHist2D();
-  vector<TH2D*> reh2d;
-  for( unsigned int i=0; i< vh_j.size(); i++ ){
-    if( vh_j[i] != 0 && vh_i[i] != 0 ){
-      TH2D* numerh=(TH2D*)(vh_j[i]->Clone("numerh") );
-      numerh->Divide( numerh, vh_i[i] );
-      reh2d.push_back( numerh );
+// -----------------------------------------------------------------------------
+//
+TH2D* getTranslationFactor::getControlData_DiMuon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel ){
+
+  TH2D *datah = getDataHist( 2, MuAddOrNot, HTBins, startNJet, nJets, "DiMuon_", FolderLabel );
+  return datah;
+}
+
+// -----------------------------------------------------------------------------
+//
+TH2D* getTranslationFactor::getControlData_Photon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel ){
+
+  TH2D *datah = getDataHist( 3, MuAddOrNot, HTBins, startNJet, nJets, "Photon_", FolderLabel );
+  return datah;
+}
+
+
+void getTranslationFactor::TranslationFactor_FromOneMuon( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel, int ATbin, int lowHTEdge, TString caption, int columnperrow ){
+
+  //  bool useAllsamples=false;
+  //  vector<TString> usedSamples;
+  //  usedSamples.push_back("WJ");
+  //  usedSamples.push_back("TT");
+
+  TString Numberator="";
+  TString PredictedName="";
+  if( usedSamples.size() <= 5 ){ Numberator = "ttW"; PredictedName="$t\\bar{t} + W$"; }
+  if( usedSamples.size() > 5 ){ Numberator = "fullMC";  }
+
+  bool useAllsamples_in=false;
+  vector<TString> usedSamples_in;
+  usedSamples_in.push_back("WJ");
+  TH2D* hadMC_WJ =  getHadMC(MuAddOrNot, HTBins, useAllsamples_in, usedSamples_in, startNJet, nJets, FolderLabel );
+  TH2D* controlMC_OneMuon_WJ = getControlMC_OneMuon( MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  usedSamples_in.clear();
+  usedSamples_in.push_back("TT");
+  TH2D* hadMC_TT =  getHadMC(MuAddOrNot, HTBins, useAllsamples_in, usedSamples_in, startNJet, nJets, FolderLabel );
+  TH2D* controlMC_OneMuon_TT = getControlMC_OneMuon( MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  usedSamples_in.clear();
+  usedSamples_in.push_back("SingleT");
+  TH2D* hadMC_SingleT =  getHadMC(MuAddOrNot, HTBins, useAllsamples_in, usedSamples_in, startNJet, nJets, FolderLabel );
+  TH2D* controlMC_OneMuon_SingleT = getControlMC_OneMuon( MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  usedSamples_in.clear();
+  usedSamples_in.push_back("DY");
+  TH2D* hadMC_DY =  getHadMC(MuAddOrNot, HTBins, useAllsamples_in, usedSamples_in, startNJet, nJets, FolderLabel );
+  TH2D* controlMC_OneMuon_DY = getControlMC_OneMuon( MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  usedSamples_in.clear();
+  usedSamples_in.push_back("Zinv");
+  TH2D* hadMC_Zinv =  getHadMC(MuAddOrNot, HTBins, useAllsamples_in, usedSamples_in, startNJet, nJets, FolderLabel );
+
+
+  TH2D* hadMC =  getHadMC(MuAddOrNot, HTBins, useAllsamples, usedSamples, startNJet, nJets, FolderLabel );
+  TH2D* controlMC_OneMuon = getControlMC_OneMuon( MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  TH2D* controlData_OneMuon =  getControlData_OneMuon(MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  TH2D* hadData =  getHadData(MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+
+
+  TH2D* TF=(TH2D*)(hadMC->Clone("TF"));
+  TF->Divide( TF, controlMC_OneMuon );
+  TH2D* Pred = (TH2D*)(controlData_OneMuon->Clone("Pred"));
+  Pred->Multiply( Pred, TF );
+
+
+  playTables pt=playTables();
+  TString digit="%.1f";
+  TString digit_TF="%.2f";
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_hadMC_WJ=pt.readHist2D_WithErr( hadMC_WJ, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_hadMC_TT=pt.readHist2D_WithErr( hadMC_TT, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_hadMC_SingleT=pt.readHist2D_WithErr( hadMC_SingleT, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_hadMC_DY=pt.readHist2D_WithErr( hadMC_DY, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_hadMC_Zinv=pt.readHist2D_WithErr( hadMC_Zinv, digit, ATbin, lowHTEdge );
+
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_controlMC_WJ=pt.readHist2D_WithErr( controlMC_OneMuon_WJ, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_controlMC_TT=pt.readHist2D_WithErr( controlMC_OneMuon_TT, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_controlMC_SingleT=pt.readHist2D_WithErr( controlMC_OneMuon_SingleT, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_controlMC_DY=pt.readHist2D_WithErr( controlMC_OneMuon_DY, digit, ATbin, lowHTEdge );
+
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_hadMC=pt.readHist2D_WithErr( hadMC, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_controlMC=pt.readHist2D_WithErr( controlMC_OneMuon, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_controlData=pt.readHist2D_WithErr( controlData_OneMuon, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_TF=pt.readHist2D_WithErr( TF, digit_TF, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_Pred=pt.readHist2D_WithErr( Pred, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_hadData=pt.readHist2D_WithErr( hadData, digit, ATbin, lowHTEdge );
+
+  vector<vector<TString> > hadMC_WJ_s=tr1::get<0> (tuple_hadMC_WJ);
+  vector<vector<TString> > hadMC_TT_s=tr1::get<0> (tuple_hadMC_TT);
+  vector<vector<TString> > hadMC_SingleT_s=tr1::get<0> (tuple_hadMC_SingleT);
+  vector<vector<TString> > hadMC_DY_s=tr1::get<0> (tuple_hadMC_DY);
+  vector<vector<TString> > hadMC_Zinv_s=tr1::get<0> (tuple_hadMC_Zinv);
+
+  vector<vector<TString> > controlMC_WJ_s=tr1::get<0> (tuple_controlMC_WJ);
+  vector<vector<TString> > controlMC_TT_s=tr1::get<0> (tuple_controlMC_TT);
+  vector<vector<TString> > controlMC_SingleT_s=tr1::get<0> (tuple_controlMC_SingleT);
+  vector<vector<TString> > controlMC_DY_s=tr1::get<0> (tuple_controlMC_DY);
+
+  vector<vector<TString> > hadMC_s=tr1::get<0> (tuple_hadMC);
+  vector<vector<TString> > controlMC_s=tr1::get<0> (tuple_controlMC);
+  vector<vector<TString> > controlData_s=tr1::get<0> (tuple_controlData);
+  vector<vector<TString> > TF_s=tr1::get<0> (tuple_TF);
+  vector<vector<TString> > Pred_s=tr1::get<0> (tuple_Pred);
+  vector<vector<TString> > hadData_s=tr1::get<0> (tuple_hadData);
+
+
+  FILE *outputfile;
+  char buffer[100];
+  sprintf (buffer, "tableTF%s_OneMuon_%s%dTo%db.tex", Numberator.Data(), FolderLabel.Data(), startNJet-1, startNJet+nJets-2 );
+  outputfile = fopen (buffer,"w");
+
+  fprintf(outputfile, "\\documentclass[a4paper,12pt]{article} \n");
+  fprintf(outputfile, "\\usepackage[margin=0.001in]{geometry} \n");
+  fprintf(outputfile, "\\begin{document} \n");
+
+  fprintf(outputfile, "\\begin{table}[htl] \n");
+
+  fprintf(outputfile, "\\caption{%s}\n", caption.Data());
+
+  TString column_s="";
+  int column=pt.getColumnNumber( HTBins, lowHTEdge );
+  if( column > columnperrow ){
+    for( int i=0; i< columnperrow; i++){
+      column_s=column_s+"c";
+    }
+  } else {
+    for( int i=0; i< column; i++){
+      column_s=column_s+"c";
+    }
+  }
+  fprintf(outputfile, " \\begin{tabular}{ c|%s }\n", column_s.Data() );
+  fprintf(outputfile, "\\hline\n");
+
+  TString HTnames=pt.getHTName( HTBins, lowHTEdge );
+  vector<TString> vHTnames;
+  if( column > columnperrow ){
+    vHTnames = pt.getHTName( HTBins, lowHTEdge, columnperrow );
+  } else {
+    vHTnames.push_back(  HTnames );
+  }
+
+
+  for( unsigned int i=0; i< vHTnames.size(); i++ ){
+    if( i == 0 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_first_WithErr( outputfile, hadMC_s, 0, columnperrow, PredictedName + "Hadronic selection MC" );
+      if( usedSamples.size() > 5 ){
+	pt.printout_first_WithErr( outputfile, hadMC_WJ_s, 0, columnperrow,  "WJet Hadronic selection MC" );
+	pt.printout_first_WithErr( outputfile, hadMC_TT_s, 0, columnperrow,  "$t\\bar{t}$ Hadronic selection MC" );
+	pt.printout_first_WithErr( outputfile, hadMC_SingleT_s, 0, columnperrow,  "Single t Hadronic selection MC" );
+	pt.printout_first_WithErr( outputfile, hadMC_DY_s, 0, columnperrow,  "DY Hadronic selection MC" );
+	pt.printout_first_WithErr( outputfile, hadMC_Zinv_s, 0, columnperrow,  "Zinv Hadronic selection MC" );
+      }
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_first_WithErr( outputfile, controlMC_s, 0, columnperrow, "$\\mu+jets$ selection MC" );
+      if( usedSamples.size() > 5 ){
+	pt.printout_first_WithErr( outputfile, controlMC_WJ_s, 0, columnperrow,  "WJet Muon selection MC" );
+	pt.printout_first_WithErr( outputfile, controlMC_TT_s, 0, columnperrow,  "$t\\bar{t}$ Muon selection MC" );
+	pt.printout_first_WithErr( outputfile, controlMC_SingleT_s, 0, columnperrow,  "Single t Muon selection MC" );
+	pt.printout_first_WithErr( outputfile, controlMC_DY_s, 0, columnperrow,  "DY Muon selection MC" );
+      }
+      pt.printout_first_WithErr( outputfile, TF_s, 0, columnperrow, "Translation factor" );
+      pt.printout_first_WithErr( outputfile, controlData_s, 0, columnperrow, "$\\mu+jets$ selection yield data" );
+      pt.printout_first_WithErr( outputfile, Pred_s, 0, columnperrow, PredictedName + "prediction" );
+      if( usedSamples.size() > 5 ){
+	pt.printout_first_WithErr( outputfile, hadData_s, 0, columnperrow, "Hadronic selection Data" );
+      }
+      fprintf(outputfile, "\\hline\n");
+    } else if( i < vHTnames.size() - 1 && i > 0 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_middle_WithErr( outputfile, hadMC_s, 0, columnperrow*i, columnperrow, PredictedName + "Hadronic selection MC" );
+      if( usedSamples.size() > 5 ){
+	pt.printout_first_WithErr( outputfile, hadMC_WJ_s, 0, columnperrow,  "WJet Hadronic selection MC" );
+	pt.printout_first_WithErr( outputfile, hadMC_TT_s, 0, columnperrow,  "$t\\bar{t}$ Hadronic selection MC" );
+	pt.printout_first_WithErr( outputfile, hadMC_SingleT_s, 0, columnperrow,  "Single t Hadronic selection MC" );
+	pt.printout_first_WithErr( outputfile, hadMC_DY_s, 0, columnperrow,  "DY Hadronic selection MC" );
+	pt.printout_first_WithErr( outputfile, hadMC_Zinv_s, 0, columnperrow,  "Zinv Hadronic selection MC" );
+      }
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_middle_WithErr( outputfile, controlMC_s, 0, columnperrow*i, columnperrow, "$\\mu+jets$ selection MC" );
+      if( usedSamples.size() > 5 ){
+	pt.printout_first_WithErr( outputfile, controlMC_WJ_s, 0, columnperrow,  "WJet Muon selection MC" );
+	pt.printout_first_WithErr( outputfile, controlMC_TT_s, 0, columnperrow,  "$t\\bar{t}$ Muon selection MC" );
+	pt.printout_first_WithErr( outputfile, controlMC_SingleT_s, 0, columnperrow,  "Single t Muon selection MC" );
+	pt.printout_first_WithErr( outputfile, controlMC_DY_s, 0, columnperrow,  "DY Muon selection MC" );
+      }
+      pt.printout_middle_WithErr( outputfile, TF_s, 0, columnperrow*i, columnperrow, "Translation factor" );
+      pt.printout_middle_WithErr( outputfile, controlData_s, 0, columnperrow*i, columnperrow, "$\\mu+jets$ selection yield data" );
+      pt.printout_middle_WithErr( outputfile, Pred_s, 0, columnperrow*i, columnperrow, PredictedName + "prediction" );
+      if( usedSamples.size() > 5 ){
+	pt.printout_first_WithErr( outputfile, hadData_s, 0, columnperrow, "Hadronic selection Data" );
+      }
+      fprintf(outputfile, "\\hline\n");
+    } else if( i == vHTnames.size() - 1 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_final_WithErr( outputfile, hadMC_s, 0, columnperrow*i, columnperrow, PredictedName + "Hadronic selection MC" );
+      if( usedSamples.size() > 5 ){
+	pt.printout_first_WithErr( outputfile, hadMC_WJ_s, 0, columnperrow,  "WJet Hadronic selection MC" );
+	pt.printout_first_WithErr( outputfile, hadMC_TT_s, 0, columnperrow,  "$t\\bar{t}$ Hadronic selection MC" );
+	pt.printout_first_WithErr( outputfile, hadMC_SingleT_s, 0, columnperrow,  "Single t Hadronic selection MC" );
+	pt.printout_first_WithErr( outputfile, hadMC_DY_s, 0, columnperrow,  "DY Hadronic selection MC" );
+	pt.printout_first_WithErr( outputfile, hadMC_Zinv_s, 0, columnperrow,  "Zinv Hadronic selection MC" );
+      }
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_final_WithErr( outputfile, controlMC_s, 0, columnperrow*i, columnperrow, "$\\mu+jets$ selection MC" );
+      if( usedSamples.size() > 5 ){
+	pt.printout_first_WithErr( outputfile, controlMC_WJ_s, 0, columnperrow,  "WJet Muon selection MC" );
+	pt.printout_first_WithErr( outputfile, controlMC_TT_s, 0, columnperrow,  "$t\\bar{t}$ Muon selection MC" );
+	pt.printout_first_WithErr( outputfile, controlMC_SingleT_s, 0, columnperrow,  "Single t Muon selection MC" );
+	pt.printout_first_WithErr( outputfile, controlMC_DY_s, 0, columnperrow,  "DY Muon selection MC" );
+      }
+      pt.printout_final_WithErr( outputfile, TF_s, 0, columnperrow*i, columnperrow, "Translation factor" );
+      pt.printout_final_WithErr( outputfile, controlData_s, 0, columnperrow*i, columnperrow, "$\\mu+jets$ selection yield data" );
+      pt.printout_final_WithErr( outputfile, Pred_s, 0, columnperrow*i, columnperrow, PredictedName + "prediction" );
+      if( usedSamples.size() > 5 ){
+	pt.printout_first_WithErr( outputfile, hadData_s, 0, columnperrow, "Hadronic selection Data" );
+      }
+      fprintf(outputfile, "\\hline\n");
+    }
+  }
+  fprintf(outputfile, " \\end{tabular}\n");
+  fprintf(outputfile, "\\label{tab:TF%s_OneMuon_%s%dTo%db}\n", Numberator.Data(), FolderLabel.Data(), startNJet-1, startNJet+nJets-2);
+
+  fprintf(outputfile, " \\end{table}\n\n\n\n");
+
+
+  fprintf(outputfile,"\\end{document}\n\n\n");
+
+  fclose( outputfile );
+  closefV();
+}
+
+void getTranslationFactor::TranslationFactor_FromDiMuon( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel, int ATbin, int lowHTEdge, TString caption, int columnperrow ){
+
+  //  bool useAllsamples=false;
+  //  vector<TString> usedSamples;
+  //  usedSamples.push_back("Zinv");
+
+  TString Numberator="";
+  TString PredictedName="";
+  if( usedSamples.size() <= 2 ){ Numberator = "Zinv"; PredictedName="$Z\\rightarrow\\nu\\bar{\\nu}$"; }
+  if( usedSamples.size() > 2 ){ Numberator = "fullMC";  }
+
+  TH2D* hadMC =  getHadMC(MuAddOrNot, HTBins, useAllsamples, usedSamples, startNJet, nJets, FolderLabel );
+  TH2D* controlMC_DiMuon = getControlMC_DiMuon( MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  TH2D* controlData_DiMuon =  getControlData_DiMuon(MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  TH2D* TF=(TH2D*)(hadMC->Clone("TF"));
+  TF->Divide( TF, controlMC_DiMuon );
+  TH2D* Pred = (TH2D*)(controlData_DiMuon->Clone("Pred"));
+  Pred->Multiply( Pred, TF );
+
+
+  playTables pt=playTables();
+  TString digit="%.1f";
+  TString digit_TF="%.2f";
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_hadMC=pt.readHist2D_WithErr( hadMC, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_controlMC=pt.readHist2D_WithErr( controlMC_DiMuon, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_controlData=pt.readHist2D_WithErr( controlData_DiMuon, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_TF=pt.readHist2D_WithErr( TF, digit_TF, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_Pred=pt.readHist2D_WithErr( Pred, digit, ATbin, lowHTEdge );
+
+  vector<vector<TString> > hadMC_s=tr1::get<0> (tuple_hadMC);
+  vector<vector<TString> > controlMC_s=tr1::get<0> (tuple_controlMC);
+  vector<vector<TString> > controlData_s=tr1::get<0> (tuple_controlData);
+  vector<vector<TString> > TF_s=tr1::get<0> (tuple_TF);
+  vector<vector<TString> > Pred_s=tr1::get<0> (tuple_Pred);
+
+
+  FILE *outputfile;
+  char buffer[100];
+  sprintf (buffer, "tableTF%s_DiMuon_%s%dTo%db.tex", Numberator.Data(), FolderLabel.Data(), startNJet-1, startNJet+nJets-2 );
+  outputfile = fopen (buffer,"w");
+
+  fprintf(outputfile, "\\documentclass[a4paper,12pt]{article} \n");
+  fprintf(outputfile, "\\usepackage[margin=0.001in]{geometry} \n");
+  fprintf(outputfile, "\\begin{document} \n");
+
+  fprintf(outputfile, "\\begin{table}[htl] \n");
+
+  fprintf(outputfile, "\\caption{%s}\n", caption.Data());
+
+  TString column_s="";
+  int column=pt.getColumnNumber( HTBins, lowHTEdge );
+  if( column > columnperrow ){
+    for( int i=0; i< columnperrow; i++){
+      column_s=column_s+"c";
+    }
+  } else {
+    for( int i=0; i< column; i++){
+      column_s=column_s+"c";
+    }
+  }
+  fprintf(outputfile, " \\begin{tabular}{ c|%s }\n", column_s.Data() );
+  fprintf(outputfile, "\\hline\n");
+
+  TString HTnames=pt.getHTName( HTBins, lowHTEdge );
+  vector<TString> vHTnames;
+  if( column > columnperrow ){
+    vHTnames = pt.getHTName( HTBins, lowHTEdge, columnperrow );
+  } else {
+    vHTnames.push_back(  HTnames );
+  }
+
+  for( unsigned int i=0; i< vHTnames.size(); i++ ){
+    if( i == 0 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_first_WithErr( outputfile, hadMC_s, 0, columnperrow, PredictedName + "Hadronic selection MC" );
+      pt.printout_first_WithErr( outputfile, controlMC_s, 0, columnperrow, "$\\mu\\bar{\\mu}+jets$ selection MC" );
+      pt.printout_first_WithErr( outputfile, TF_s, 0, columnperrow, "Translation factor" );
+      pt.printout_first_WithErr( outputfile, controlData_s, 0, columnperrow, "$\\mu\\bar{\\mu}+jets$ selection yield data" );
+      pt.printout_first_WithErr( outputfile, Pred_s, 0, columnperrow, PredictedName + "prediction" );
+      fprintf(outputfile, "\\hline\n");
+    } else if( i < vHTnames.size() - 1 && i > 0 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_middle_WithErr( outputfile, hadMC_s, 0, columnperrow*i, columnperrow, PredictedName + "Hadronic selection MC" );
+      pt.printout_middle_WithErr( outputfile, controlMC_s, 0, columnperrow*i, columnperrow, "$\\mu\\bar{\\mu}+jets$ selection MC" );
+      pt.printout_middle_WithErr( outputfile, TF_s, 0, columnperrow*i, columnperrow, "Translation factor" );
+      pt.printout_middle_WithErr( outputfile, controlData_s, 0, columnperrow*i, columnperrow, "$\\mu\\bar{\\mu}+jets$ selection yield data" );
+      pt.printout_middle_WithErr( outputfile, Pred_s, 0, columnperrow*i, columnperrow, PredictedName + "prediction" );
+      fprintf(outputfile, "\\hline\n");
+    } else if( i == vHTnames.size() - 1 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_final_WithErr( outputfile, hadMC_s, 0, columnperrow*i, columnperrow, PredictedName + "Hadronic selection MC" );
+      pt.printout_final_WithErr( outputfile, controlMC_s, 0, columnperrow*i, columnperrow, "$\\mu\\bar{\\mu}+jets$ selection MC" );
+      pt.printout_final_WithErr( outputfile, TF_s, 0, columnperrow*i, columnperrow, "Translation factor" );
+      pt.printout_final_WithErr( outputfile, controlData_s, 0, columnperrow*i, columnperrow, "$\\mu\\bar{\\mu}+jets$ selection yield data" );
+      pt.printout_final_WithErr( outputfile, Pred_s, 0, columnperrow*i, columnperrow, PredictedName + "prediction" );
+      fprintf(outputfile, "\\hline\n");
+    }
+  }
+  fprintf(outputfile, " \\end{tabular}\n");
+  fprintf(outputfile, "\\label{tab:TF%s_DiMuon_%s%dTo%db}\n", Numberator.Data(), FolderLabel.Data(), startNJet-1, startNJet+nJets-2);
+
+  fprintf(outputfile, " \\end{table}\n\n\n\n");
+
+
+  fprintf(outputfile,"\\end{document}\n\n\n");
+  fclose( outputfile );
+
+  closefV();
+}
+
+
+void getTranslationFactor::TranslationFactor_FromPhoton( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel, int ATbin, int lowHTEdge, TString caption, int columnperrow ){
+
+  //  bool useAllsamples=false;
+  //  vector<TString> usedSamples;
+  //  usedSamples.push_back("Zinv");
+
+  TString Numberator="";
+  TString PredictedName="";
+  if( usedSamples.size() <= 2 ){ Numberator = "Zinv"; PredictedName="$Z\\rightarrow\\nu\\bar{\\nu}$"; }
+  if( usedSamples.size() > 2 ){ Numberator = "fullMC";  }
+
+  TH2D* hadMC =  getHadMC(MuAddOrNot, HTBins, useAllsamples, usedSamples, startNJet, nJets, FolderLabel );
+  TH2D* controlMC_Photon = getControlMC_Photon( MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  TH2D* controlData_Photon =  getControlData_Photon(MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+
+
+  TH2D* TF=(TH2D*)(hadMC->Clone("TF"));
+  TF->Divide( TF, controlMC_Photon );
+  TH2D* Pred = (TH2D*)(controlData_Photon->Clone("Pred"));
+  Pred->Multiply( Pred, TF );
+
+
+  playTables pt=playTables();
+  TString digit="%.1f";
+  TString digit_TF="%.2f";
+
+  for( unsigned int i = 1; i <= hadMC->GetNbinsX(); i++ ){
+    double xbinlow=hadMC->GetXaxis()->GetBinLowEdge(i);
+    if( (int)(xbinlow*10.) < lowHTEdge){
+      for( int j = 1; j <= hadMC->GetNbinsY(); j++ ){
+	controlMC_Photon->SetBinContent(i, j, 0. );
+	controlMC_Photon->SetBinError(i, j, 0. );
+	controlData_Photon->SetBinContent(i, j, 0. );
+	controlData_Photon->SetBinError(i, j, 0. );
+	TF->SetBinContent(i, j, 0. );
+	TF->SetBinError(i, j, 0. );
+	Pred->SetBinContent(i, j, 0. );
+	Pred->SetBinError(i, j, 0. );
+      }
     }
   }
 
-    return reh2d;
-}
 
-void getTranslationFactor::Tables_iTojBJet( bool MuAddOrNot, TString HTBins, bool separateSample, TString singleMCsample, int startNJet_i, int nJets_i, int startNJet_j, int nJets_j, TString MuonNumber, TString FolderLabel ){
-  int whichpart=1;
-  if( MuonNumber== "OneMuon_" || MuonNumber== "DiMuon_" ) whichpart=2;
-  if( MuonNumber== "Photon_"  ) whichpart=3;
-  vector<TH2D*> vh_factor=TranslationFactor( whichpart, whichpart, MuAddOrNot, HTBins, separateSample, singleMCsample, startNJet_i, nJets_i, startNJet_j, nJets_j, MuonNumber, MuonNumber, FolderLabel, FolderLabel, true, true, false );
-  vector<TH2D*> vh_num=PreTranslationFactor( whichpart, MuAddOrNot, HTBins, separateSample, singleMCsample, startNJet_j, nJets_j, MuonNumber, FolderLabel, true, false );
-  vector<TH2D*> vh_dom=PreTranslationFactor( whichpart, MuAddOrNot, HTBins, separateSample, singleMCsample, startNJet_i, nJets_i, MuonNumber, FolderLabel, true, false );
-  printTables pt=printTables();
-  TString digi="%.1f";
-  vector<vector<TString> > MC_num=pt.readHist_WithErr( vh_num[1], digi );
-  vector<vector<TString> > MC_dom=pt.readHist_WithErr( vh_dom[1], digi );
-  vector<vector<TString> > data_num=pt.readHist_WithErr( vh_num[0], digi );
-  vector<vector<TString> > data_dom=pt.readHist_WithErr( vh_dom[0], digi );
-  vector<vector<TString> > factor=pt.readHist_WithErr( vh_factor[1], digi );
-  TH2D *preh=(TH2D*)(vh_factor[1]->Clone("preh"));
-  preh->Multiply( preh, vh_dom[0]);
-  vector<vector<TString> > predic=pt.readHist_WithErr( preh, digi );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_hadMC=pt.readHist2D_WithErr( hadMC, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_controlMC=pt.readHist2D_WithErr( controlMC_Photon, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_controlData=pt.readHist2D_WithErr( controlData_Photon, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_TF=pt.readHist2D_WithErr( TF, digit_TF, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_Pred=pt.readHist2D_WithErr( Pred, digit, ATbin, lowHTEdge );
+
+  vector<vector<TString> > hadMC_s=tr1::get<0> (tuple_hadMC);
+  vector<vector<TString> > controlMC_s=tr1::get<0> (tuple_controlMC);
+  vector<vector<TString> > controlData_s=tr1::get<0> (tuple_controlData);
+  vector<vector<TString> > TF_s=tr1::get<0> (tuple_TF);
+  vector<vector<TString> > Pred_s=tr1::get<0> (tuple_Pred);
+
+
+
   FILE *outputfile;
   char buffer[100];
-  sprintf (buffer, "table_%s%siTojBJet_%d_%dTo%d_%db.tex", MuonNumber.Data(), FolderLabel.Data(), startNJet_i-1, startNJet_i + nJets_i - 2, startNJet_j - 1, startNJet_j + nJets_j - 2 );
+  sprintf (buffer, "tableTF%s_Photon_%s%dTo%db.tex", Numberator.Data(), FolderLabel.Data(), startNJet-1, startNJet+nJets-2 );
   outputfile = fopen (buffer,"w");
+
   fprintf(outputfile, "\\documentclass[a4paper,12pt]{article} \n");
   fprintf(outputfile, "\\usepackage[margin=0.001in]{geometry} \n");
   fprintf(outputfile, "\\begin{document} \n");
 
   fprintf(outputfile, "\\begin{table}[htl] \n");
 
-  fprintf(outputfile, "\\caption{Backgroupd predictions.}\n");
-  fprintf(outputfile, " \\begin{flushleft}\n");
-  fprintf(outputfile, " \\begin{tabular}{ c|cccccccc }\n");
+  fprintf(outputfile, "\\caption{%s}\n", caption.Data());
 
+  TString column_s="";
+  int column=pt.getColumnNumber( HTBins, lowHTEdge );
+  if( column > columnperrow ){
+    for( int i=0; i< columnperrow; i++){
+      column_s=column_s+"c";
+    }
+  } else {
+    for( int i=0; i< column; i++){
+      column_s=column_s+"c";
+    }
+  }
+  fprintf(outputfile, " \\begin{tabular}{ c|%s }\n", column_s.Data() );
   fprintf(outputfile, "\\hline\n");
 
-  TString range_i=Form("%d--%d",startNJet_i - 1, startNJet_i + nJets_j - 2);
-  TString range_j=Form("%d--%d ", startNJet_j - 1, startNJet_j + nJets_j - 2);
-  if( nJets_i >= 10 )   {      range_i=Form("%d--\\infty ", startNJet_i - 1 ); }
-  if( startNJet_i == 0 ){      range_i=Form("\\geq 0");                        }
-  if( nJets_i == 1  )   {      range_i = Form("%d", startNJet_i - 1 );         }
-  if( nJets_j >= 10 )   {      range_j=Form("%d--\\infty", startNJet_j - 1 );               }
-  if( startNJet_j == 0 ){      range_j=Form("\\geq 0");                                     }
-  if( nJets_j == 1  )   {      range_j = Form("%d", startNJet_j - 1 );         }
-  TString controlname="";
-  if( MuonNumber == "OneMuon_") controlname="\\mu+jets";
-  if( MuonNumber == "DiMuon_" ) controlname="\\mu\\mu+jets";
-  if( MuonNumber == "Photon_" ) controlname="\\gamma+jets";
-  if( !notCutAlphaT_ ){
-    fprintf(outputfile, "$ \\alpha_T $ range   &  \\multicolumn{4}{c}{$\\alpha_T>0.55d$, closure test $%s\\rightarrow%s$ b-jets, $%s$.}\\\\ \n ", range_i.Data(), range_j.Data(), controlname.Data()  );
+  TString HTnames=pt.getHTName( HTBins, lowHTEdge );
+  vector<TString> vHTnames;
+  if( column > columnperrow ){
+    vHTnames = pt.getHTName( HTBins, lowHTEdge, columnperrow );
   } else {
-    fprintf(outputfile, "$ \\alpha_T $ range   &  \\multicolumn{4}{c}{no $\\alpha_T$ cut, closure test $%s\\rightarrow%s$ b-jets, $%s$.}\\\\ \n ", range_i.Data(), range_j.Data(), controlname.Data() );
+    vHTnames.push_back(  HTnames );
   }
 
-  fprintf(outputfile, " HT (GeV) & 275--325 & 325--375 & 375--475 & 475--575 & 575--675 & 675--775 & 775--875 & 875--$\\infty$ \\\\ \n ");
-  fprintf(outputfile, "\\hline\n");
-  int column_n=8;
-  int iAT=0;
-  pt.printout_first_WithErr( outputfile, MC_num, iAT, 2, column_n, Form("$%s$-b MC", range_j.Data() ) );
-  pt.printout_first_WithErr( outputfile, MC_dom, iAT, 2, column_n, Form("$%s$-b MC", range_i.Data() ) );
-  pt.printout_first_WithErr( outputfile, factor, iAT, 2, column_n, "TF" );
-  pt.printout_first_WithErr( outputfile, data_dom, iAT, 2, column_n, "Control data" );
-  pt.printout_first_WithErr( outputfile, predic, iAT, 2, column_n, "Prediction" );
-  pt.printout_first_WithErr( outputfile, data_num, iAT, 2, column_n, "Yield" );
-
-  fprintf(outputfile, "\\hline\n");
+  for( unsigned int i=0; i< vHTnames.size(); i++ ){
+    if( i == 0 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_first_WithErr( outputfile, hadMC_s, 0, columnperrow, PredictedName + "Hadronic selection MC" );
+      pt.printout_first_WithErr( outputfile, controlMC_s, 0, columnperrow, "$\\gamma+jets$ selection MC" );
+      pt.printout_first_WithErr( outputfile, TF_s, 0, columnperrow, "Translation factor" );
+      pt.printout_first_WithErr( outputfile, controlData_s, 0, columnperrow, "$\\gamma+jets$ selection yield data" );
+      pt.printout_first_WithErr( outputfile, Pred_s, 0, columnperrow, PredictedName + "prediction" );
+      fprintf(outputfile, "\\hline\n");
+    } else if( i < vHTnames.size() - 1 && i > 0 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_middle_WithErr( outputfile, hadMC_s, 0, columnperrow*i, columnperrow, PredictedName + "Hadronic selection MC" );
+      pt.printout_middle_WithErr( outputfile, controlMC_s, 0, columnperrow*i, columnperrow, "$\\gamma+jets$ selection MC" );
+      pt.printout_middle_WithErr( outputfile, TF_s, 0, columnperrow*i, columnperrow, "Translation factor" );
+      pt.printout_middle_WithErr( outputfile, controlData_s, 0, columnperrow*i, columnperrow, "$\\gamma+jets$ selection yield data" );
+      pt.printout_middle_WithErr( outputfile, Pred_s, 0, columnperrow*i, columnperrow, PredictedName + "prediction" );
+      fprintf(outputfile, "\\hline\n");
+    } else if( i == vHTnames.size() - 1 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_final_WithErr( outputfile, hadMC_s, 0, columnperrow*i, columnperrow, PredictedName + "Hadronic selection MC" );
+      pt.printout_final_WithErr( outputfile, controlMC_s, 0, columnperrow*i, columnperrow, "$\\gamma+jets$ selection MC" );
+      pt.printout_final_WithErr( outputfile, TF_s, 0, columnperrow*i, columnperrow, "Translation factor" );
+      pt.printout_final_WithErr( outputfile, controlData_s, 0, columnperrow*i, columnperrow, "$\\gamma$ selection yield data" );
+      pt.printout_final_WithErr( outputfile, Pred_s, 0, columnperrow*i, columnperrow, PredictedName + "prediction" );
+      fprintf(outputfile, "\\hline\n");
+    }
+  }
   fprintf(outputfile, " \\end{tabular}\n");
-  fprintf(outputfile, " \\end{flushleft}\n");
-  fprintf(outputfile, "\\label{tab:table-%s%siTojBJet-%d_%dTo%d_%db}\n", MuonNumber.Data(), FolderLabel.Data(), startNJet_i - 1, startNJet_i + nJets_i - 2, startNJet_j - 1, startNJet_j + nJets_j - 2);
+  fprintf(outputfile, "\\label{tab:TF%s_Photon_%s%dTo%db}\n", Numberator.Data(), FolderLabel.Data(), startNJet-1, startNJet+nJets-2);
+
   fprintf(outputfile, " \\end{table}\n\n\n\n");
+
+
   fprintf(outputfile,"\\end{document}\n\n\n");
 
   fclose( outputfile );
+  closefV();
+}
+
+
+TH2D* getTranslationFactor::Prediction_FromOneMuon( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel ){
+
+
+  TH2D* hadMC =  getHadMC(MuAddOrNot, HTBins, useAllsamples, usedSamples, startNJet, nJets, FolderLabel );
+  TH2D* controlMC_OneMuon = getControlMC_OneMuon( MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  TH2D* controlData_OneMuon =  getControlData_OneMuon(MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+
+  TH2D* TF=(TH2D*)(hadMC->Clone("TF"));
+  TF->Divide( TF, controlMC_OneMuon );
+  TH2D* Pred = (TH2D*)(controlData_OneMuon->Clone("Pred"));
+  Pred->Multiply( Pred, TF );
+
+
+  return Pred;
 
 }
 
-void getTranslationFactor::Tables_iTojJet( bool MuAddOrNot, TString HTBins, bool separateSample, TString singleMCsample, int startNJet, int nJets, TString MuonNumber, TString FolderLabel_i, TString FolderLabel_j ){
-  int whichpart=1;
-  if( MuonNumber == "OneMuon_" || MuonNumber == "DiMuon_" ) whichpart = 2;
-  if( MuonNumber == "Photon_"  ) whichpart = 3;
 
-  vector<TH2D*> vh_factor=TranslationFactor( whichpart, whichpart, MuAddOrNot, HTBins, separateSample, singleMCsample, startNJet, nJets, startNJet, nJets, MuonNumber, MuonNumber, FolderLabel_i, FolderLabel_j, true, true, false );
-  vector<TH2D*> vh_num=PreTranslationFactor( whichpart, MuAddOrNot, HTBins, separateSample, singleMCsample, startNJet, nJets, MuonNumber, FolderLabel_j, true, false );
-  vector<TH2D*> vh_dom=PreTranslationFactor( whichpart, MuAddOrNot, HTBins, separateSample, singleMCsample, startNJet, nJets, MuonNumber, FolderLabel_i, true, false );
-  printTables pt=printTables();
-  TString digi="%.1f";
-  vector<vector<TString> > MC_num=pt.readHist_WithErr( vh_num[1], digi );
-  vector<vector<TString> > MC_dom=pt.readHist_WithErr( vh_dom[1], digi );
-  vector<vector<TString> > data_num=pt.readHist_WithErr( vh_num[0], digi );
-  vector<vector<TString> > data_dom=pt.readHist_WithErr( vh_dom[0], digi );
-  vector<vector<TString> > factor=pt.readHist_WithErr( vh_factor[1], digi );
-  TH2D *preh=(TH2D*)(vh_factor[1]->Clone("preh"));
-  preh->Multiply( preh, vh_dom[0]);
-  vector<vector<TString> > predic=pt.readHist_WithErr( preh, digi );
+TH2D* getTranslationFactor::Prediction_FromDiMuon( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel ){
+
+  TH2D* hadMC =  getHadMC(MuAddOrNot, HTBins, useAllsamples, usedSamples, startNJet, nJets, FolderLabel );
+  TH2D* controlMC_DiMuon = getControlMC_DiMuon( MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  TH2D* controlData_DiMuon =  getControlData_DiMuon(MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+
+  TH2D* TF=(TH2D*)(hadMC->Clone("TF"));
+  TF->Divide( TF, controlMC_DiMuon );
+  TH2D* Pred = (TH2D*)(controlData_DiMuon->Clone("Pred"));
+  Pred->Multiply( Pred, TF );
+
+
+  return Pred;
+
+}
+
+
+TH2D* getTranslationFactor::Prediction_FromPhoton( bool MuAddOrNot, TString HTBins, bool useAllsamples, vector<TString> usedSamples, int startNJet, int nJets, TString FolderLabel ){
+
+  TH2D* hadMC =  getHadMC(MuAddOrNot, HTBins, useAllsamples, usedSamples, startNJet, nJets, FolderLabel );
+  TH2D* controlMC_Photon = getControlMC_Photon( MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  TH2D* controlData_Photon =  getControlData_Photon(MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+
+  TH2D* TF=(TH2D*)(hadMC->Clone("TF"));
+  TF->Divide( TF, controlMC_Photon );
+  TH2D* Pred = (TH2D*)(controlData_Photon->Clone("Pred"));
+  Pred->Multiply( Pred, TF );
+
+  return Pred;
+
+}
+
+
+
+void getTranslationFactor::TranslationFactor_FromOneMuonDiMuon( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel, int ATbin, int lowHTEdge, TString caption, int columnperrow ){
+
+  playTables pt=playTables();
+
+  bool useAllsamples=false;
+  vector<TString> usedSamples;
+  usedSamples.push_back("WJ");
+  usedSamples.push_back("TT");
+  usedSamples.push_back("SingleT");
+  usedSamples.push_back("DY");
+
+  TH2D* hadData =  getHadData(MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  TH2D *pred_OneMuon=Prediction_FromOneMuon( MuAddOrNot, HTBins, useAllsamples, usedSamples, startNJet, nJets, FolderLabel );
+  TH2D *pred_DiMuon=Prediction_FromDiMuon( MuAddOrNot, HTBins, useAllsamples, usedSamples, startNJet, nJets, FolderLabel );
+
+  TH2D *totalSM=(TH2D*)(pred_OneMuon->Clone("totalSM"));
+  totalSM->Add(totalSM, pred_DiMuon );
+
+  TString digit="%.1f";
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_hadData=pt.readHist2D_WithErr( hadData, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_predOneMuon=pt.readHist2D_WithErr( pred_OneMuon, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_predDiMuon=pt.readHist2D_WithErr( pred_DiMuon, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_totalSM=pt.readHist2D_WithErr( totalSM, digit, ATbin, lowHTEdge );
+
+
+  vector<vector<TString> > hadData_s=tr1::get<0> (tuple_hadData);
+  vector<vector<TString> > predOneMuon_s=tr1::get<0> (tuple_predOneMuon);
+  vector<vector<TString> > predDiMuon_s=tr1::get<0> (tuple_predDiMuon);
+  vector<vector<TString> > totalSM_s=tr1::get<0> (tuple_totalSM);
 
   FILE *outputfile;
   char buffer[100];
-  sprintf (buffer, "table_%siTojJet_%sTo%s%dTo%db.tex", MuonNumber.Data(), FolderLabel_i.Data(), FolderLabel_j.Data(), startNJet-1, startNJet + nJets -2 );
+  sprintf (buffer, "tableTFOneMuonDiMuon_%s%dTo%db.tex", FolderLabel.Data(), startNJet-1, startNJet+nJets-2 );
   outputfile = fopen (buffer,"w");
+
   fprintf(outputfile, "\\documentclass[a4paper,12pt]{article} \n");
   fprintf(outputfile, "\\usepackage[margin=0.001in]{geometry} \n");
   fprintf(outputfile, "\\begin{document} \n");
 
   fprintf(outputfile, "\\begin{table}[htl] \n");
 
-  fprintf(outputfile, "\\caption{Backgroupd predictions.}\n");
-  fprintf(outputfile, " \\begin{flushleft}\n");
-  fprintf(outputfile, " \\begin{tabular}{ c|cccccccc }\n");
+  fprintf(outputfile, "\\caption{%s}\n", caption.Data());
 
+  TString column_s="";
+  int column=pt.getColumnNumber( HTBins, lowHTEdge );
+  if( column > columnperrow ){
+    for( int i=0; i< columnperrow; i++){
+      column_s=column_s+"c";
+    }
+  } else {
+    for( int i=0; i< column; i++){
+      column_s=column_s+"c";
+    }
+  }
+  fprintf(outputfile, " \\begin{tabular}{ c|%s }\n", column_s.Data() );
   fprintf(outputfile, "\\hline\n");
 
-  TString range_i="";
-  TString range_j="";
-  if( FolderLabel_i == "TwoThreeJet_") range_i = Form( "$2\\leqN_{jet}\\leq3$ \\rightarrow$" );
-  if( FolderLabel_i == "MoreThreeJet_") range_i = Form( "$N_{jet}\\geq4$ \\rightarrow$" );
-  if( FolderLabel_j == "TwoThreeJet_") range_j = Form( "$2\\leqN_{jet}\\leq3$ \\rightarrow$" );
-  if( FolderLabel_j == "MoreThreeJet_") range_j = Form( "$N_{jet}\\geq4$ \\rightarrow$" );
-  TString bn=Form("$%d--%d$ ", startNJet - 1, startNJet + nJets - 2 );
-  if( nJets >= 10 )   {      bn = Form("$%d--\\infty$ ", startNJet - 1 ); }
-  if( startNJet == 0 ){      bn = Form("$\\geq 0");                      }
-  if( nJets == 1  )   {      bn = Form("$%d$ ", startNJet - 1 );}
-
-  if( !notCutAlphaT_ ){
-    fprintf(outputfile, "$ \\alpha_T $ range   &  \\multicolumn{4}{c}{$\\alpha_T>0.55d$, closure test %s%s, %s b-jets.}\\\\ \n ", range_i.Data(), range_j.Data(), bn.Data() );
+  TString HTnames=pt.getHTName( HTBins, lowHTEdge );
+  vector<TString> vHTnames;
+  if( column > columnperrow ){
+    vHTnames = pt.getHTName( HTBins, lowHTEdge, columnperrow );
   } else {
-    fprintf(outputfile, "$ \\alpha_T $ range   &  \\multicolumn{4}{c}{no $\\alpha_T$ cut, closure test %s%s, %s b-jets.}\\\\ \n ", range_i.Data(), range_j.Data(), bn.Data() );
+    vHTnames.push_back(  HTnames );
   }
 
-  fprintf(outputfile, " HT (GeV) & 275--325 & 325--375 & 375--475 & 475--575 & 575--675 & 675--775 & 775--875 & 875--$\\infty$ \\\\ \n ");
-  fprintf(outputfile, "\\hline\n");
-  int column_n=8;
-  int iAT=0;
-  TString controlname="Hadronic";
-  if( MuonNumber == "OneMuon_") controlname="\\mu+jets";
-  if( MuonNumber == "DiMuon_" ) controlname="\\mu\\mu+jets";
-  if( MuonNumber == "Photon_" ) controlname="\\gamma+jets";
-  pt.printout_first_WithErr( outputfile, MC_num, iAT, 2, column_n, Form("$%s$ MC", range_j.Data() ) );
-  pt.printout_first_WithErr( outputfile, MC_dom, iAT, 2, column_n, Form("$%s$ MC", range_i.Data() ) );
-  pt.printout_first_WithErr( outputfile, factor, iAT, 2, column_n, "TF" );
-  pt.printout_first_WithErr( outputfile, predic, iAT, 2, column_n, "Prediction" );
-  pt.printout_first_WithErr( outputfile, data_dom, iAT, 2, column_n, Form("$%s$ data", range_i.Data() ) );
-  pt.printout_first_WithErr( outputfile, data_num, iAT, 2, column_n, Form("$%s$ data", range_j.Data() ) );
-
-  fprintf(outputfile, "\\hline\n");
+  for( unsigned int i=0; i< vHTnames.size(); i++ ){
+    if( i == 0 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_first_WithErr( outputfile, predOneMuon_s, 0, columnperrow, "$t\\bar{t} + W$ prediction from $\\mu + jets$" );
+      pt.printout_first_WithErr( outputfile, predDiMuon_s, 0, columnperrow, "$Z\\rightarrow\\nu\\nu$ prediction from $\\gamma+jets$" );
+      pt.printout_first_WithErr( outputfile, totalSM_s, 0, columnperrow, "Total SM prediction" );
+      pt.printout_first_WithErr( outputfile, hadData_s, 0, columnperrow, "Hadronic yield from Data" );
+      fprintf(outputfile, "\\hline\n");
+    } else if( i < vHTnames.size() - 1 && i > 0 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_middle_WithErr( outputfile, predOneMuon_s, 0, columnperrow*i, columnperrow, "$t\\bar{t} + W$ prediction from $\\mu + jets$" );
+      pt.printout_middle_WithErr( outputfile, predDiMuon_s, 0, columnperrow*i, columnperrow, "$Z\\rightarrow\\nu\\nu$ prediction from $\\gamma+jets$" );
+      pt.printout_middle_WithErr( outputfile, totalSM_s, 0, columnperrow*i, columnperrow, "Total SM prediction" );
+      pt.printout_middle_WithErr( outputfile, hadData_s, 0, columnperrow*i, columnperrow, "Hadronic yield from Data" );
+      fprintf(outputfile, "\\hline\n");
+    } else if( i == vHTnames.size() - 1 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_final_WithErr( outputfile, predOneMuon_s, 0, columnperrow*i, columnperrow, "$t\\bar{t} + W$ prediction from $\\mu + jets$" );
+      pt.printout_final_WithErr( outputfile, predDiMuon_s, 0, columnperrow*i, columnperrow, "$Z\\rightarrow\\nu\\nu$ prediction from $\\gamma+jets$" );
+      pt.printout_final_WithErr( outputfile, totalSM_s, 0, columnperrow*i, columnperrow, "Total SM prediction" );
+      pt.printout_final_WithErr( outputfile, hadData_s, 0, columnperrow*i, columnperrow, "Hadronic yield from Data" );
+      fprintf(outputfile, "\\hline\n");
+    }
+  }
   fprintf(outputfile, " \\end{tabular}\n");
-  fprintf(outputfile, " \\end{flushleft}\n");
-  fprintf(outputfile, "\\label{tab:table-%siTojJet-%sTo%s%dTo%db}\n", MuonNumber.Data(), FolderLabel_i.Data(), FolderLabel_j.Data(), startNJet - 1, startNJet + nJets - 2);
+  fprintf(outputfile, "\\label{tab:TFOneMuonDiMuon_%s%dTo%db}\n", FolderLabel.Data(), startNJet-1, startNJet+nJets-2);
+
   fprintf(outputfile, " \\end{table}\n\n\n\n");
+
+
   fprintf(outputfile,"\\end{document}\n\n\n");
 
   fclose( outputfile );
+  closefV();
 
 }
 
-void getTranslationFactor::Tables_iTojSele( bool MuAddOrNot, TString HTBins, bool separateSample, TString singleMCsample, int startNJet, int nJets, TString MuonNumber_i, TString MuonNumber_j, TString FolderLabel ){
-  int whichpart_i=1;
-  int whichpart_j=1;
-  bool notCutAlphaT_i=true;
-  bool notCutAlphaT_j=false;
-  if( MuonNumber_i == "OneMuon_" || MuonNumber_i == "DiMuon_" ) whichpart_i = 2;
-  if( MuonNumber_i == "Photon_"  ) whichpart_i = 3;
-  if( MuonNumber_j == "OneMuon_" || MuonNumber_j == "DiMuon_" ) whichpart_j = 2;
-  if( MuonNumber_j == "Photon_"  ) whichpart_j = 3;
-  if( MuonNumber_i == "" ) notCutAlphaT_i=false;
-  if( MuonNumber_j == "" ) notCutAlphaT_j=false;
 
-  vector<TH2D*> vh_factor=TranslationFactor( whichpart_i, whichpart_j, MuAddOrNot, HTBins, separateSample, singleMCsample, startNJet, nJets, startNJet, nJets, MuonNumber_i, MuonNumber_j, FolderLabel, FolderLabel, notCutAlphaT_i, notCutAlphaT_j, false );
-  vector<TH2D*> vh_num=PreTranslationFactor( whichpart_j, MuAddOrNot, HTBins, separateSample, singleMCsample, startNJet, nJets, MuonNumber_j, FolderLabel, notCutAlphaT_j, false );
-  vector<TH2D*> vh_dom=PreTranslationFactor( whichpart_i, MuAddOrNot, HTBins, separateSample, singleMCsample, startNJet, nJets, MuonNumber_i, FolderLabel, notCutAlphaT_i, false );
-  printTables pt=printTables();
-  TString digi="%.1f";
-  vector<vector<TString> > MC_num=pt.readHist_WithErr( vh_num[1], digi );
-  vector<vector<TString> > MC_dom=pt.readHist_WithErr( vh_dom[1], digi );
-  vector<vector<TString> > data_num=pt.readHist_WithErr( vh_num[0], digi );
-  vector<vector<TString> > data_dom=pt.readHist_WithErr( vh_dom[0], digi );
-  vector<vector<TString> > factor=pt.readHist_WithErr( vh_factor[1], digi );
-  TH2D *preh=(TH2D*)(vh_factor[1]->Clone("preh"));
-  preh->Multiply( preh, vh_dom[0]);
-  vector<vector<TString> > predic=pt.readHist_WithErr( preh, digi );
+
+void getTranslationFactor::TranslationFactor_FromOneMuonPhoton( bool MuAddOrNot, TString HTBins, int startNJet, int nJets, TString FolderLabel, int ATbin, int lowHTEdge, TString caption, int columnperrow ){
+
+  playTables pt=playTables();
+
+  bool useAllsamples=false;
+  vector<TString> usedSamples;
+  usedSamples.push_back("Zinv");
+
+  TH2D* hadData =  getHadData(MuAddOrNot, HTBins, startNJet, nJets, FolderLabel );
+  TH2D *pred_OneMuon=Prediction_FromOneMuon( MuAddOrNot, HTBins, useAllsamples, usedSamples, startNJet, nJets, FolderLabel );
+  TH2D *pred_Photon=Prediction_FromPhoton( MuAddOrNot, HTBins, useAllsamples, usedSamples, startNJet, nJets, FolderLabel );
+
+  TH2D *totalSM=(TH2D*)(pred_OneMuon->Clone("totalSM"));
+  totalSM->Add(totalSM, pred_Photon );
+
+  TString digit="%.1f";
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_hadData=pt.readHist2D_WithErr( hadData, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_predOneMuon=pt.readHist2D_WithErr( pred_OneMuon, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_predPhoton=pt.readHist2D_WithErr( pred_Photon, digit, ATbin, lowHTEdge );
+  tr1::tuple< vector<vector<TString> >, double, double > tuple_totalSM=pt.readHist2D_WithErr( totalSM, digit, ATbin, lowHTEdge );
+
+
+  vector<vector<TString> > hadData_s=tr1::get<0> (tuple_hadData);
+  vector<vector<TString> > predOneMuon_s=tr1::get<0> (tuple_predOneMuon);
+  vector<vector<TString> > predPhoton_s=tr1::get<0> (tuple_predPhoton);
+  vector<vector<TString> > totalSM_s=tr1::get<0> (tuple_totalSM);
 
   FILE *outputfile;
   char buffer[100];
-  sprintf (buffer, "table_%siTojSele_%sTo%s%dTo%db.tex", FolderLabel.Data(), MuonNumber_i.Data(), MuonNumber_j.Data(), startNJet-1, startNJet + nJets -2 );
+  sprintf (buffer, "tableTFOneMuonPhoton_%s%dTo%db.tex", FolderLabel.Data(), startNJet-1, startNJet+nJets-2 );
   outputfile = fopen (buffer,"w");
+
   fprintf(outputfile, "\\documentclass[a4paper,12pt]{article} \n");
   fprintf(outputfile, "\\usepackage[margin=0.001in]{geometry} \n");
   fprintf(outputfile, "\\begin{document} \n");
 
   fprintf(outputfile, "\\begin{table}[htl] \n");
 
-  fprintf(outputfile, "\\caption{Backgroupd predictions.}\n");
-  fprintf(outputfile, " \\begin{flushleft}\n");
-  fprintf(outputfile, " \\begin{tabular}{ c|cccccccc }\n");
+  fprintf(outputfile, "\\caption{%s}\n", caption.Data());
 
+  TString column_s="";
+  int column=pt.getColumnNumber( HTBins, lowHTEdge );
+  if( column > columnperrow ){
+    for( int i=0; i< columnperrow; i++){
+      column_s=column_s+"c";
+    }
+  } else {
+    for( int i=0; i< column; i++){
+      column_s=column_s+"c";
+    }
+  }
+  fprintf(outputfile, " \\begin{tabular}{ c|%s }\n", column_s.Data() );
   fprintf(outputfile, "\\hline\n");
 
-  TString controlname_i="Hadronic";
-  TString controlname_j="Hadronic";
-  if( MuonNumber_i == "OneMuon_") controlname_i="\\mu+jets";
-  if( MuonNumber_i == "DiMuon_" ) controlname_i="\\mu\\mu+jets";
-  if( MuonNumber_i == "Photon_" ) controlname_i="\\gamma+jets";
-  if( MuonNumber_j == "OneMuon_") controlname_j="\\mu+jets";
-  if( MuonNumber_j == "DiMuon_" ) controlname_j="\\mu\\mu+jets";
-  if( MuonNumber_j == "Photon_" ) controlname_j="\\gamma+jets";
-  TString range_i = Form( "$%s \\rightarrow$", controlname_i.Data() );
-  TString range_j = Form( "$%s$ ", controlname_j.Data() );
-  TString bn=Form("$%d--%d$ ", startNJet - 1, startNJet + nJets - 2 );
-  if( nJets >= 10 )   {      bn = Form("$%d--\\infty$ ", startNJet - 1 ); }
-  if( startNJet == 0 ){      bn = Form("$\\geq 0");                      }
-  if( nJets == 1  )   {      bn = Form("$%d$ ", startNJet - 1 );}
-
-  if( !notCutAlphaT_ ){
-    fprintf(outputfile, "$ \\alpha_T $ range   &  \\multicolumn{4}{c}{$\\alpha_T>0.55d$, closure test %s%s, %s b-jets.}\\\\ \n ", range_i.Data(), range_j.Data(), bn.Data() );
+  TString HTnames=pt.getHTName( HTBins, lowHTEdge );
+  vector<TString> vHTnames;
+  if( column > columnperrow ){
+    vHTnames = pt.getHTName( HTBins, lowHTEdge, columnperrow );
   } else {
-    fprintf(outputfile, "$ \\alpha_T $ range   &  \\multicolumn{4}{c}{no $\\alpha_T$ cut, closure test %s%s, %s b-jets.}\\\\ \n ", range_i.Data(), range_j.Data(), bn.Data() );
+    vHTnames.push_back(  HTnames );
   }
 
-  fprintf(outputfile, " HT (GeV) & 275--325 & 325--375 & 375--475 & 475--575 & 575--675 & 675--775 & 775--875 & 875--$\\infty$ \\\\ \n ");
-  fprintf(outputfile, "\\hline\n");
-  int column_n=8;
-  int iAT=0;
-  pt.printout_first_WithErr( outputfile, MC_num, iAT, 2, column_n, Form("$%s$ MC", controlname_j.Data() ) );
-  pt.printout_first_WithErr( outputfile, MC_dom, iAT, 2, column_n, Form("$%s$ MC", controlname_i.Data() ) );
-  pt.printout_first_WithErr( outputfile, factor, iAT, 2, column_n, "TF" );
-  pt.printout_first_WithErr( outputfile, data_dom, iAT, 2, column_n, Form("$%s$ data", controlname_i.Data() ) );
-  pt.printout_first_WithErr( outputfile, predic, iAT, 2, column_n, "Prediction" );
-  pt.printout_first_WithErr( outputfile, data_num, iAT, 2, column_n, Form("$%s$ data", controlname_j.Data() ) );
-
-  fprintf(outputfile, "\\hline\n");
+  for( unsigned int i=0; i< vHTnames.size(); i++ ){
+    if( i == 0 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_first_WithErr( outputfile, predOneMuon_s, 0, columnperrow, "$t\\bar{t} + W$ prediction from $\\mu + jets$" );
+      pt.printout_first_WithErr( outputfile, predPhoton_s, 0, columnperrow, "$Z\\rightarrow\\nu\\nu$ prediction from $\\mu\\mu+jets$" );
+      pt.printout_first_WithErr( outputfile, totalSM_s, 0, columnperrow, "Total SM prediction" );
+      pt.printout_first_WithErr( outputfile, hadData_s, 0, columnperrow, "Hadronic yield from Data" );
+      fprintf(outputfile, "\\hline\n");
+    } else if( i < vHTnames.size() - 1 && i > 0 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_middle_WithErr( outputfile, predOneMuon_s, 0, columnperrow*i, columnperrow, "$t\\bar{t} + W$ prediction from $\\mu + jets$" );
+      pt.printout_middle_WithErr( outputfile, predPhoton_s, 0, columnperrow*i, columnperrow, "$Z\\rightarrow\\nu\\nu$ prediction from $\\mu\\mu+jets$" );
+      pt.printout_middle_WithErr( outputfile, totalSM_s, 0, columnperrow*i, columnperrow, "Total SM prediction" );
+      pt.printout_middle_WithErr( outputfile, hadData_s, 0, columnperrow*i, columnperrow, "Hadronic yield from Data" );
+      fprintf(outputfile, "\\hline\n");
+    } else if( i == vHTnames.size() - 1 ){
+      fprintf(outputfile, " HT (GeV) & %s \\\\ \n ", (vHTnames[i]).Data() );
+      fprintf(outputfile, "\\hline\n");
+      pt.printout_final_WithErr( outputfile, predOneMuon_s, 0, columnperrow*i, columnperrow, "$t\\bar{t} + W$ prediction from $\\mu + jets$" );
+      pt.printout_final_WithErr( outputfile, predPhoton_s, 0, columnperrow*i, columnperrow, "$Z\\rightarrow\\nu\\nu$ prediction from $\\mu\\mu+jets$" );
+      pt.printout_final_WithErr( outputfile, totalSM_s, 0, columnperrow*i, columnperrow, "Total SM prediction" );
+      pt.printout_final_WithErr( outputfile, hadData_s, 0, columnperrow*i, columnperrow, "Hadronic yield from Data" );
+      fprintf(outputfile, "\\hline\n");
+    }
+  }
   fprintf(outputfile, " \\end{tabular}\n");
-  fprintf(outputfile, " \\end{flushleft}\n");
-  fprintf(outputfile, "\\label{tab:table-%siTojSele-%sTo%s%dTo%db}\n", FolderLabel.Data(), MuonNumber_i.Data(), MuonNumber_j.Data(), startNJet - 1, startNJet + nJets - 2);
+  fprintf(outputfile, "\\label{tab:TFOneMuonPhoton_%s%dTo%db}\n", FolderLabel.Data(), startNJet-1, startNJet+nJets-2);
+
   fprintf(outputfile, " \\end{table}\n\n\n\n");
+
+
   fprintf(outputfile,"\\end{document}\n\n\n");
 
   fclose( outputfile );
+  closefV();
 
 }
 
-void getTranslationFactor::getResults( TString closuretests ){
+void getTranslationFactor::getResults(){
   bool MuAddOrNot=false;
   TString HTBins="all";
   bool separateSample=false;
   TString singleMCsample="";
+  bool useAllsamples=false;
 
-  if( closuretests == "iTojBJet" || closuretests == "All" ){
-    Tables_iTojBJet( MuAddOrNot, HTBins, separateSample, singleMCsample, 1, 1, 2, 1, "OneMuon_", "TwoThreeJet_" );
-  }
+  bool useAllSamples = false;
+  vector<TString> usedSamples;
+  usedSamples.push_back("WJ");
+  usedSamples.push_back("TT");
+  //  usedSamples.push_back("SingleT");
+  //  usedSamples.push_back("DY");
+  TranslationFactor_FromOneMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 1, 1, "TwoThreeJet_", 5500, 2750, "$t\\bar{t} + W$ prediction from $\\mu+jet$ sample, $ 2\\leq n_{jet} \\leq 3$, $n_{b} = 0$", 4 );
+  TranslationFactor_FromOneMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 2, 1, "TwoThreeJet_", 5500, 2750, "$t\\bar{t} + W$ prediction from $\\mu+jet$ sample, $ 2\\leq n_{jet} \\leq 3$, $n_{b} = 1$", 4 );
+  usedSamples.clear();
+  usedSamples.push_back("Zinv");
+  TranslationFactor_FromPhoton(MuAddOrNot, HTBins, useAllSamples, usedSamples, 1, 1, "TwoThreeJet_", 5500, 2750, "$Z\\rightarrow\\nu\\nu$ prediction from $\\gamma+jet$  sample, $ 2\\leq n_{jet} \\leq 3$, $n_{b} = 0$", 4 );
+  TranslationFactor_FromDiMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 1, 1, "TwoThreeJet_", 5500, 2750, "$Z\\rightarrow\\nu\\nu$ prediction from $\\mu\\mu+jet$  sample, $ 2\\leq n_{jet} \\leq 3$, $n_{b} = 0$", 4 );
+  TranslationFactor_FromPhoton(MuAddOrNot, HTBins, useAllSamples, usedSamples, 2, 1, "TwoThreeJet_", 5500, 2750, "$Z\\rightarrow\\nu\\nu$ prediction from $\\gamma+jet$  sample, $ 2\\leq n_{jet} \\leq 3$, $n_{b} = 1$", 4 );
+  TranslationFactor_FromDiMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 2, 1, "TwoThreeJet_", 5500, 2750, "$Z\\rightarrow\\nu\\nu$ prediction from $\\mu\\mu+jet$  sample, $ 2\\leq n_{jet} \\leq 3$, $n_{b} = 1$", 4 );
 
-  if( closuretests == "iTojJet" || closuretests == "All" ){
-    Tables_iTojJet( MuAddOrNot, HTBins, separateSample, singleMCsample, 1,1,"OneMuon_", "TwoThreeJet_", "MoreThreeJet_" );
-  }
+  TranslationFactor_FromOneMuonPhoton( MuAddOrNot, HTBins, 1, 1, "TwoThreeJet_", 5500, 2750, "Total SM prediction from $\\mu+jets$ and $\\gamma+jets$, $2\\leq n_{jet} \\leq 3$, $n_{b}=0$", 4 );
+  TranslationFactor_FromOneMuonDiMuon( MuAddOrNot, HTBins, 1, 1, "TwoThreeJet_", 5500, 2750, "Total SM prediction from $\\mu+jets$ and $\\gamma+jets$, $2\\leq n_{jet} \\leq 3$, $n_{b}=0$", 4 );
+  TranslationFactor_FromOneMuonPhoton( MuAddOrNot, HTBins, 2, 1, "TwoThreeJet_", 5500, 2750, "Total SM prediction from $\\mu+jets$ and $\\gamma+jets$, $2\\leq n_{jet} \\leq 3$, $n_{b}=1$", 4 );
+  TranslationFactor_FromOneMuonDiMuon( MuAddOrNot, HTBins, 2, 1, "TwoThreeJet_", 5500, 2750, "Total SM prediction from $\\mu+jets$ and $\\gamma+jets$, $2\\leq n_{jet} \\leq 3$, $n_{b}=1$", 4 );
 
-  if( closuretests == "iTojSele" || closuretests == "All" ){
-    //    Tables_iTojSele( MuAddOrNot, HTBins, separateSample, singleMCsample, 1, 1, "OneMuon_", "DiMuon_", "" );
-    Tables_iTojSele( MuAddOrNot, HTBins, separateSample, singleMCsample, 2, 1, "OneMuon_", "", "TwoThreeJet_" );
-  }
 
-  if( closuretests == "AT" || closuretests == "All" ){
-    cout<<"adding"<<endl;
-  }
+
+  useAllSamples = true;
+  usedSamples=MCvf_samples();
+  TranslationFactor_FromOneMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 3, 1, "TwoThreeJet_", 5500, 2750, "Total SM prediction from $\\mu+jet$  sample, $ 2\\leq n_{jet} \\leq 3$, $n_{b} = 2$", 4 );
+  TranslationFactor_FromOneMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 4, 1, "TwoThreeJet_", 5500, 2750, "Total SM prediction from $\\mu+jet$  sample, $ 2\\leq n_{jet} \\leq 3$, $n_{b} = 3$", 4 );
+  TranslationFactor_FromOneMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 5, 1, "TwoThreeJet_", 5500, 2750, "Total SM prediction from $\\mu+jet$  sample, $ 2\\leq n_{jet} \\leq 3$, $n_{b} = 4$", 4 );
+
+
+  //Njet >= 4
+  usedSamples.clear();
+  usedSamples.push_back("WJ");
+  usedSamples.push_back("TT");
+  //  usedSamples.push_back("SingleT");
+  //  usedSamples.push_back("DY");
+  TranslationFactor_FromOneMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 1, 1, "MoreThreeJet_", 5500, 2750, "$t\\bar{t} + W$ prediction from $\\mu+jet$  sample, $n_{jet} \\lgeq 4$, $n_{b} = 0$", 4 );
+  TranslationFactor_FromOneMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 2, 1, "MoreThreeJet_", 5500, 2750, "$t\\bar{t} + W$ prediction from $\\mu+jet$  sample, $n_{jet} \\lgeq 4$, $n_{b} = 1$", 4 );
+
+  usedSamples.clear();
+  usedSamples.push_back("Zinv");
+  TranslationFactor_FromPhoton(MuAddOrNot, HTBins, useAllSamples, usedSamples, 1, 1, "MoreThreeJet_", 5500, 2750, "$Z\\rightarrow\\nu\\nu$ prediction from $\\gamma+jet$  sample, $n_{jet} \\lgeq 4$, $n_{b} = 0$", 4 );
+  TranslationFactor_FromDiMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 1, 1, "MoreThreeJet_", 5500, 2750, "$Z\\rightarrow\\nu\\nu$ prediction from $\\mu\\mu+jet$  sample, $n_{jet} \\lgeq 4$, $n_{b} = 0$", 4 );
+  TranslationFactor_FromPhoton(MuAddOrNot, HTBins, useAllSamples, usedSamples, 2, 1, "MoreThreeJet_", 5500, 2750, "$Z\\rightarrow\\nu\\nu$ prediction from $\\gamma+jet$  sample, $n_{jet} \\lgeq 4$, $n_{b} = 1$", 4 );
+  TranslationFactor_FromDiMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 2, 1, "MoreThreeJet_", 5500, 2750, "$Z\\rightarrow\\nu\\nu$ prediction from $\\mu\\mu+jet$  sample, $n_{jet} \\lgeq 4$, $n_{b} = 1$", 4 );
+
+
+  TranslationFactor_FromOneMuonPhoton( MuAddOrNot, HTBins, 1, 1, "MoreThreeJet_", 5500, 2750, "Total SM prediction from $\\mu+jets$ and $\\gamma+jets$, $2\\leq n_{jet} \\leq 3$, $n_{b}=0$", 4 );
+  TranslationFactor_FromOneMuonDiMuon( MuAddOrNot, HTBins, 1, 1, "MoreThreeJet_", 5500, 2750, "Total SM prediction from $\\mu+jets$ and $\\gamma+jets$, $2\\leq n_{jet} \\leq 3$, $n_{b}=0$", 4 );
+  TranslationFactor_FromOneMuonPhoton( MuAddOrNot, HTBins, 2, 1, "MoreThreeJet_", 5500, 2750, "Total SM prediction from $\\mu+jets$ and $\\gamma+jets$, $2\\leq n_{jet} \\leq 3$, $n_{b}=1$", 4 );
+  TranslationFactor_FromOneMuonDiMuon( MuAddOrNot, HTBins, 2, 1, "MoreThreeJet_", 5500, 2750, "Total SM prediction from $\\mu+jets$ and $\\gamma+jets$, $2\\leq n_{jet} \\leq 3$, $n_{b}=1$", 4 );
+
+
+  useAllSamples = true;
+  usedSamples=MCvf_samples();
+  TranslationFactor_FromOneMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 3, 1, "MoreThreeJet_", 5500, 2750, "$t\\bar{t} + W$ prediction from $\\mu+jet$  sample, $n_{jet} \\lgeq 4$, $n_{b} = 2$", 4 );
+  TranslationFactor_FromOneMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 4, 1, "MoreThreeJet_", 5500, 2750, "$t\\bar{t} + W$ prediction from $\\mu+jet$  sample, $n_{jet} \\lgeq 4$, $n_{b} = 3$", 4 );
+  TranslationFactor_FromOneMuon(MuAddOrNot, HTBins, useAllSamples, usedSamples, 5, 1, "MoreThreeJet_", 5500, 2750, "$t\\bar{t} + W$ prediction from $\\mu+jet$  sample, $n_{jet} \\lgeq 4$, $n_{b} = 4$", 4 );
+
+
 
 }
