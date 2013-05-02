@@ -1,5 +1,5 @@
-#ifndef basicPlots_h
-#define basicPlots_h
+#ifndef turnOnPlots_h
+#define turnOnPlots_h
 
 #include "TH1D.h"
 #include "TString.h"
@@ -14,10 +14,10 @@
 
 using namespace std;
 
-class basicPlots : public menus, public vectors{
+class turnOnPlots : public menus, public vectors{
  public:
-  basicPlots();
-  ~basicPlots(){;}
+  turnOnPlots();
+  ~turnOnPlots(){;}
 
   TH1D* Hist1D( vector<TFile*> invf, vector<TString> vdirname, vector<TString> vhname, double inscale, int rebin, TString xAxisName, TString yAxisName, double xAxisRange1, double xAxisRange2, vector<double> trigeff );
 
@@ -47,5 +47,5 @@ class basicPlots : public menus, public vectors{
 
  private:
 
-};
-#endif
+};//turnOnPlots
+#endif // 

@@ -207,7 +207,7 @@ menus::menus(){
 
   TString period="";
   //  inidir_="/Users/phxzm/Work_CMS/SUSY/ForICHEP2012/myppt/TenthLookAt8TeVData_AimToICHEP_ForAproval27062012_25062012/";
-  inidir_="/Users/phxzm/Work_CMS/Trigger/SUSYL1Upgrade/FourteenTeV/Change_25Apr2013_SingleLepOrLepXJetOrLepXMHT_AndNewTriggerMenu/";
+  inidir_="/Users/phxzm/Work_CMS/Trigger/SUSYL1Upgrade/FourteenTeV/Change_25Apr2013_/";
   //  inidir_="/Users/phxzm/Work_CMS/Trigger/SUSYL1Upgrade/FourteenTeV/Change_22Apr2013_AddSingleLepTrig/";
   //  subdir_="/allBJets_ApplyLepID_Xclean5GeVNoIDincommon_NewMenuOn04Feb2013";
   //  subdir_="/allBJets_ApplyLepID_Xclean5GeVNoIDincommon_NewMenuOn05Feb2013_evencountTH1I";
@@ -217,7 +217,7 @@ menus::menus(){
   //  subdir_="/allBJets_ApplyLepID_Xclean5GeVNoIDincommon_NewMenuOn11Feb2013_evencountTH1I_1Lep";
   //  subdir_="/allBJets_ApplyLepID_Xclean5GeVNoIDincommon_NewMenuOn19Feb2013_evencountTH1I_JetMHTEvolution";
   //  subdir_="/allBJets_ApplyLepID_Xclean5GeVNoIDincommon_NewMenuOn27Feb2013_evencountTH1I_75kHz";
-  subdir_="/allBJets_OverlapStudy";
+  subdir_="/allBJets_TestWhyOUpgradeLowThanCurrentForCombineTriggerWhileseperateTriggerAllHigh";
 
   NotHadTaudataset_="HT2012"+period;
   signalTrig_="";

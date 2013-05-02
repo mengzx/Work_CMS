@@ -28,7 +28,7 @@ class printTables: public vectors, public menus{
   void results( int dataMC, int ihist, TString FolderLabel, TString LepSele, TString whichdom );
   void results_Simplified( int dataMC, int ihist, TString FolderLabel, TString LepSele, TString whichdom );
   int TotalNEv( TString sample );
-  vector<double> PlateauEff( TString sample, int ihist );
+  vector<double> PlateauEff( TString sample, int ihist, TString LepSele );
 
 };
 

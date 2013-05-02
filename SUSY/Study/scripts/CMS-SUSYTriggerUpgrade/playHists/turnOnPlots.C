@@ -1,4 +1,4 @@
-#include "basicPlots.h"
+#include "turnOnPlots.h"
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -160,7 +160,6 @@ vector<TH1D*> basicPlots::getHists( bool MuAddOrNot, TString HTBins, int whichpa
   }
   return vh;
 }
-
 //1D
 void basicPlots::drawHists( bool MuAddOrNot, TString HTBins, int whichpart, int rebin, TString xAxisName, TString yAxisName, double xAxisRange1, double xAxisRange2, TString whichplot, TLegend * len, double lowy, double highy, int OneDTwoD, int startNJet, int nJets, TString MuonNumber, TString FolderLabel, TString LepSele, TString whichdom ){
   TCanvas *c1=new TCanvas("c1","c1", 1000, 900 );
@@ -173,7 +172,6 @@ void basicPlots::drawHists( bool MuAddOrNot, TString HTBins, int whichpart, int 
   vector<bool> vh_special;
   vector<unsigned int> vh_linestype;
   vector<int> vh_totalEV;
-
 
   if( hasTT_601_PostLS1v2_patch3_ ){
     vector<double> entriesv=getHist_Entries( HTBins, whichpart, true, "TT_601_PostLS1v2_patch3", FolderLabel, LepSele, whichdom);
@@ -994,7 +992,6 @@ void basicPlots::drawHists( bool MuAddOrNot, TString HTBins, int whichpart, int 
   len->Clear();
   closefV();
 
-
 }
 
 
@@ -1237,219 +1234,219 @@ void basicPlots::getResults( TString HTBins, TString selection, int startNJet, i
   */
 
   vector<TString> samples;
-  //  samples.push_back("T2bw_2j_300_150_14T_PU35");
+  samples.push_back("T2bw_2j_300_150_14T_PU35");
   samples.push_back("T2bw_2j_600_150_14T_PU35");
   samples.push_back("T2bw_2j_600_450_14T_PU35");
-  //  samples.push_back("T2tt_2j_300_100_14T_PU35");
-  //  samples.push_back("T2tt_2j_600_100_14T_PU35");
-  //  samples.push_back("T2tt_2j_600_400_14T_PU35");
-  //  samples.push_back("T1T1_2BC_350_100_14T_PU35");
+  samples.push_back("T2tt_2j_300_100_14T_PU35");
+  samples.push_back("T2tt_2j_600_100_14T_PU35");
+  samples.push_back("T2tt_2j_600_400_14T_PU35");
+  samples.push_back("T1T1_2BC_350_100_14T_PU35");
 
-  //  samples.push_back("T2bw_2j_300_150_14T_PU50");
+  samples.push_back("T2bw_2j_300_150_14T_PU50");
   samples.push_back("T2bw_2j_600_150_14T_PU50");
   samples.push_back("T2bw_2j_600_450_14T_PU50");
-  //  samples.push_back("T2tt_2j_300_100_14T_PU50");
-  //  samples.push_back("T2tt_2j_600_100_14T_PU50");
-  //  samples.push_back("T2tt_2j_600_400_14T_PU50");
-  //  samples.push_back("T1T1_2BC_350_100_14T_PU50");
+  samples.push_back("T2tt_2j_300_100_14T_PU50");
+  samples.push_back("T2tt_2j_600_100_14T_PU50");
+  samples.push_back("T2tt_2j_600_400_14T_PU50");
+  samples.push_back("T1T1_2BC_350_100_14T_PU50");
 
-  //  samples.push_back("T2bw_2j_300_150_14T_PU50xb25");
+  samples.push_back("T2bw_2j_300_150_14T_PU50xb25");
   samples.push_back("T2bw_2j_600_150_14T_PU50xb25");
   samples.push_back("T2bw_2j_600_450_14T_PU50xb25");
-  //  samples.push_back("T2tt_2j_300_100_14T_PU50xb25");
-  //  samples.push_back("T2tt_2j_600_100_14T_PU50xb25");
-  //  samples.push_back("T2tt_2j_600_400_14T_PU50xb25");
-  //  samples.push_back("T1T1_2BC_350_100_14T_PU50xb25");
+  samples.push_back("T2tt_2j_300_100_14T_PU50xb25");
+  samples.push_back("T2tt_2j_600_100_14T_PU50xb25");
+  samples.push_back("T2tt_2j_600_400_14T_PU50xb25");
+  samples.push_back("T1T1_2BC_350_100_14T_PU50xb25");
 
 
   vector<TString> vleninput;
-  //  vleninput.push_back("T2bw(300,150), PU35"); //T2bw_2j_300_150_14T_PU35
+  vleninput.push_back("T2bw(300,150), PU35"); //T2bw_2j_300_150_14T_PU35
   vleninput.push_back("T2bw(600,150), PU35"); //T2bw_2j_600_150_14T_PU35
   vleninput.push_back("T2bw(600,450), PU35"); //T2bw_2j_600_450_14T_PU35
-  //  vleninput.push_back("T2tt(300,100), PU35"); //T2tt_2j_300_100_14T_PU35
-  //  vleninput.push_back("T2tt(600,100), PU35"); //T2tt_2j_600_100_14T_PU35
-  //  vleninput.push_back("T2tt(600,400), PU35"); //T2tt_2j_600_400_14T_PU35
-  //  vleninput.push_back("T1T1(350,100), PU35"); //T1T1_2BC_350_100_14T_PU35
+  vleninput.push_back("T2tt(300,100), PU35"); //T2tt_2j_300_100_14T_PU35
+  vleninput.push_back("T2tt(600,100), PU35"); //T2tt_2j_600_100_14T_PU35
+  vleninput.push_back("T2tt(600,400), PU35"); //T2tt_2j_600_400_14T_PU35
+  vleninput.push_back("T1T1(350,100), PU35"); //T1T1_2BC_350_100_14T_PU35
 
-  //  vleninput.push_back("T2bw(300,150), PU50"); //T2bw_2j_300_150_14T_PU50
+  vleninput.push_back("T2bw(300,150), PU50"); //T2bw_2j_300_150_14T_PU50
   vleninput.push_back("T2bw(600,150), PU50"); //T2bw_2j_600_150_14T_PU50
   vleninput.push_back("T2bw(600,450), PU50"); //T2bw_2j_600_450_14T_PU50
-  //  vleninput.push_back("T2tt(300,100), PU50"); //T2tt_2j_300_100_14T_PU50
-  //  vleninput.push_back("T2tt(600,100), PU50"); //T2tt_2j_600_100_14T_PU50
-  //  vleninput.push_back("T2tt(600,400), PU50"); //T2tt_2j_600_400_14T_PU50
-  //  vleninput.push_back("T1T1(350,100), PU50"); //T1T1_2BC_350_100_14T_PU50
+  vleninput.push_back("T2tt(300,100), PU50"); //T2tt_2j_300_100_14T_PU50
+  vleninput.push_back("T2tt(600,100), PU50"); //T2tt_2j_600_100_14T_PU50
+  vleninput.push_back("T2tt(600,400), PU50"); //T2tt_2j_600_400_14T_PU50
+  vleninput.push_back("T1T1(350,100), PU50"); //T1T1_2BC_350_100_14T_PU50
 
-  //  vleninput.push_back("T2bw(300,150), PU50xb25ns"); //T2bw_2j_300_150_14T_PU50xb25
+  vleninput.push_back("T2bw(300,150), PU50xb25ns"); //T2bw_2j_300_150_14T_PU50xb25
   vleninput.push_back("T2bw(600,150), PU50xb25ns"); //T2bw_2j_600_150_14T_PU50xb25
   vleninput.push_back("T2bw(600,450), PU50xb25ns"); //T2bw_2j_600_450_14T_PU50xb25
-  //  vleninput.push_back("T2tt(300,100), PU50xb25ns"); //T2tt_2j_300_100_14T_PU50xb25
-  //  vleninput.push_back("T2tt(600,100), PU50xb25ns"); //T2tt_2j_600_100_14T_PU50xb25
-  //  vleninput.push_back("T2tt(600,400), PU50xb25ns"); //T2tt_2j_600_400_14T_PU50xb25
-  //  vleninput.push_back("T1T1(350,100), PU50xb25ns"); //T1T1_2BC_350_100_14T_PU50xb25
+  vleninput.push_back("T2tt(300,100), PU50xb25ns"); //T2tt_2j_300_100_14T_PU50xb25
+  vleninput.push_back("T2tt(600,100), PU50xb25ns"); //T2tt_2j_600_100_14T_PU50xb25
+  vleninput.push_back("T2tt(600,400), PU50xb25ns"); //T2tt_2j_600_400_14T_PU50xb25
+  vleninput.push_back("T1T1(350,100), PU50xb25ns"); //T1T1_2BC_350_100_14T_PU50xb25
 
 
   TString sample="T2bw_2j_600_450_14T";
   vector<double> xlow;
-  //  xlow.push_back(0.); //T2bw_2j_300_150_14T_PU35
+  xlow.push_back(0.); //T2bw_2j_300_150_14T_PU35
   xlow.push_back(0.); //T2bw_2j_600_150_14T_PU35
   xlow.push_back(0.); //T2bw_2j_600_450_14T_PU35
-  //  xlow.push_back(0.); //T2tt_2j_300_100_14T_PU35
-  //  xlow.push_back(0.); //T2tt_2j_600_100_14T_PU35
-  //  xlow.push_back(0.); //T2tt_2j_600_400_14T_PU35
-  //  xlow.push_back(0.); //T1T1_2BC_350_100_14T_PU35
-  //  xlow.push_back(0.); //T2bw_2j_300_150_14T_PU50
+  xlow.push_back(0.); //T2tt_2j_300_100_14T_PU35
+  xlow.push_back(0.); //T2tt_2j_600_100_14T_PU35
+  xlow.push_back(0.); //T2tt_2j_600_400_14T_PU35
+  xlow.push_back(0.); //T1T1_2BC_350_100_14T_PU35
+  xlow.push_back(0.); //T2bw_2j_300_150_14T_PU50
   xlow.push_back(0.); //T2bw_2j_600_150_14T_PU50
   xlow.push_back(0.); //T2bw_2j_600_450_14T_PU50
-  //  xlow.push_back(0.); //T2tt_2j_300_100_14T_PU50
-  //  xlow.push_back(0.); //T2tt_2j_600_100_14T_PU50
-  //  xlow.push_back(0.); //T2tt_2j_600_400_14T_PU50
-  //  xlow.push_back(0.); //T1T1_2BC_350_100_14T_PU50
-  //  xlow.push_back(0.); //T2tt_2j_600_400_14T_PU50xb25
+  xlow.push_back(0.); //T2tt_2j_300_100_14T_PU50
+  xlow.push_back(0.); //T2tt_2j_600_100_14T_PU50
+  xlow.push_back(0.); //T2tt_2j_600_400_14T_PU50
+  xlow.push_back(0.); //T1T1_2BC_350_100_14T_PU50
+  xlow.push_back(0.); //T2tt_2j_600_400_14T_PU50xb25
 
   vector<double> xhigh;
-  //  xhigh.push_back(150.); //T2bw_2j_300_150_14T_PU35
+  xhigh.push_back(150.); //T2bw_2j_300_150_14T_PU35
   xhigh.push_back(300.); //T2bw_2j_600_150_14T_PU35
   xhigh.push_back(150.); //T2bw_2j_600_450_14T_PU35
-  //  xhigh.push_back(150.); //T2tt_2j_300_100_14T_PU35
-  //  xhigh.push_back(300.); //T2tt_2j_600_100_14T_PU35
-  //  xhigh.push_back(150.); //T2tt_2j_600_400_14T_PU35
-  //  xhigh.push_back(150.); //T1T1_2BC_350_100_14T_PU35
+  xhigh.push_back(150.); //T2tt_2j_300_100_14T_PU35
+  xhigh.push_back(300.); //T2tt_2j_600_100_14T_PU35
+  xhigh.push_back(150.); //T2tt_2j_600_400_14T_PU35
+  xhigh.push_back(150.); //T1T1_2BC_350_100_14T_PU35
 
-  //  xhigh.push_back(150.); //T2bw_2j_300_150_14T_PU50
+  xhigh.push_back(150.); //T2bw_2j_300_150_14T_PU50
   xhigh.push_back(300.); //T2bw_2j_600_150_14T_PU50
   xhigh.push_back(150.); //T2bw_2j_600_450_14T_PU50
-  //  xhigh.push_back(150.); //T2tt_2j_300_100_14T_PU50
-  //  xhigh.push_back(300.); //T2tt_2j_600_100_14T_PU50
-  //  xhigh.push_back(150.); //T2tt_2j_600_400_14T_PU50
-  //  xhigh.push_back(150.); //T1T1_2BC_350_100_14T_PU50
+  xhigh.push_back(150.); //T2tt_2j_300_100_14T_PU50
+  xhigh.push_back(300.); //T2tt_2j_600_100_14T_PU50
+  xhigh.push_back(150.); //T2tt_2j_600_400_14T_PU50
+  xhigh.push_back(150.); //T1T1_2BC_350_100_14T_PU50
 
-  //  xhigh.push_back(150.); //T2bw_2j_300_150_14T_PU50xb25
+  xhigh.push_back(150.); //T2bw_2j_300_150_14T_PU50xb25
   xhigh.push_back(300.); //T2bw_2j_600_150_14T_PU50xb25
   xhigh.push_back(150.); //T2bw_2j_600_450_14T_PU50xb25
-  //  xhigh.push_back(150.); //T2tt_2j_300_100_14T_PU50xb25
-  //  xhigh.push_back(300.); //T2tt_2j_600_100_14T_PU50xb25
-  //  xhigh.push_back(150.); //T2tt_2j_600_400_14T_PU50xb25
-  //  xhigh.push_back(150.); //T1T1_2BC_350_100_14T_PU50xb25
+  xhigh.push_back(150.); //T2tt_2j_300_100_14T_PU50xb25
+  xhigh.push_back(300.); //T2tt_2j_600_100_14T_PU50xb25
+  xhigh.push_back(150.); //T2tt_2j_600_400_14T_PU50xb25
+  xhigh.push_back(150.); //T1T1_2BC_350_100_14T_PU50xb25
 
   vector<double> xhighjm;
-  //  xhighjm.push_back(160.); //T2bw_2j_300_150_14T_PU35
+  xhighjm.push_back(160.); //T2bw_2j_300_150_14T_PU35
   xhighjm.push_back(300.); //T2bw_2j_600_150_14T_PU35
   xhighjm.push_back(160.); //T2bw_2j_600_450_14T_PU35
-  //  xhighjm.push_back(160.); //T2tt_2j_300_100_14T_PU35
-  //  xhighjm.push_back(300.); //T2tt_2j_600_100_14T_PU35
-  //  xhighjm.push_back(160.); //T2tt_2j_600_400_14T_PU35
-  //  xhighjm.push_back(160.); //T1T1_2BC_350_100_14T_PU35
+  xhighjm.push_back(160.); //T2tt_2j_300_100_14T_PU35
+  xhighjm.push_back(300.); //T2tt_2j_600_100_14T_PU35
+  xhighjm.push_back(160.); //T2tt_2j_600_400_14T_PU35
+  xhighjm.push_back(160.); //T1T1_2BC_350_100_14T_PU35
 
-  //  xhighjm.push_back(160.); //T2bw_2j_300_150_14T_PU50
+  xhighjm.push_back(160.); //T2bw_2j_300_150_14T_PU50
   xhighjm.push_back(300.); //T2bw_2j_600_150_14T_PU50
   xhighjm.push_back(160.); //T2bw_2j_600_450_14T_PU50
-  //  xhighjm.push_back(160.); //T2tt_2j_300_100_14T_PU50
-  //  xhighjm.push_back(300.); //T2tt_2j_600_100_14T_PU50
-  //  xhighjm.push_back(160.); //T2tt_2j_600_400_14T_PU50
-  //  xhighjm.push_back(160.); //T1T1_2BC_350_100_14T_PU50
+  xhighjm.push_back(160.); //T2tt_2j_300_100_14T_PU50
+  xhighjm.push_back(300.); //T2tt_2j_600_100_14T_PU50
+  xhighjm.push_back(160.); //T2tt_2j_600_400_14T_PU50
+  xhighjm.push_back(160.); //T1T1_2BC_350_100_14T_PU50
 
-  //  xhighjm.push_back(160.); //T2bw_2j_300_150_14T_PU50xb25
+  xhighjm.push_back(160.); //T2bw_2j_300_150_14T_PU50xb25
   xhighjm.push_back(300.); //T2bw_2j_600_150_14T_PU50xb25
   xhighjm.push_back(160.); //T2bw_2j_600_450_14T_PU50xb25
-  //  xhighjm.push_back(160.); //T2tt_2j_300_100_14T_PU50xb25
-  //  xhighjm.push_back(300.); //T2tt_2j_600_100_14T_PU50xb25
-  //  xhighjm.push_back(160.); //T2tt_2j_600_400_14T_PU50xb25
-  //  xhighjm.push_back(160.); //T1T1_2BC_350_100_14T_PU50xb25
+  xhighjm.push_back(160.); //T2tt_2j_300_100_14T_PU50xb25
+  xhighjm.push_back(300.); //T2tt_2j_600_100_14T_PU50xb25
+  xhighjm.push_back(160.); //T2tt_2j_600_400_14T_PU50xb25
+  xhighjm.push_back(160.); //T1T1_2BC_350_100_14T_PU50xb25
 
   vector<double> ylow;
-  //  ylow.push_back(0.); //T2bw_2j_300_150_14T_PU35
+  ylow.push_back(0.); //T2bw_2j_300_150_14T_PU35
   ylow.push_back(0.); //T2bw_2j_600_150_14T_PU35
   ylow.push_back(0.); //T2bw_2j_600_450_14T_PU35
-  //  ylow.push_back(0.); //T2tt_2j_300_100_14T_PU35
-  //  ylow.push_back(0.); //T2tt_2j_600_100_14T_PU35
-  //  ylow.push_back(0.); //T2tt_2j_600_400_14T_PU35
-  //  ylow.push_back(0.); //T1T1_2BC_350_100_14T_PU35
-  //  ylow.push_back(0.); //T2bw_2j_300_150_14T_PU50
+  ylow.push_back(0.); //T2tt_2j_300_100_14T_PU35
+  ylow.push_back(0.); //T2tt_2j_600_100_14T_PU35
+  ylow.push_back(0.); //T2tt_2j_600_400_14T_PU35
+  ylow.push_back(0.); //T1T1_2BC_350_100_14T_PU35
+  ylow.push_back(0.); //T2bw_2j_300_150_14T_PU50
   ylow.push_back(0.); //T2bw_2j_600_150_14T_PU50
   ylow.push_back(0.); //T2bw_2j_600_450_14T_PU50
-  //  ylow.push_back(0.); //T2tt_2j_300_100_14T_PU50
-  //  ylow.push_back(0.); //T2tt_2j_600_100_14T_PU50
-  //  ylow.push_back(0.); //T2tt_2j_600_400_14T_PU50
-  //  ylow.push_back(0.); //T1T1_2BC_350_100_14T_PU50
-  //  ylow.push_back(0.); //T2bw_2j_300_150_14T_PU50xb25
+  ylow.push_back(0.); //T2tt_2j_300_100_14T_PU50
+  ylow.push_back(0.); //T2tt_2j_600_100_14T_PU50
+  ylow.push_back(0.); //T2tt_2j_600_400_14T_PU50
+  ylow.push_back(0.); //T1T1_2BC_350_100_14T_PU50
+  ylow.push_back(0.); //T2bw_2j_300_150_14T_PU50xb25
   ylow.push_back(0.); //T2bw_2j_600_150_14T_PU50xb25
   ylow.push_back(0.); //T2bw_2j_600_450_14T_PU50xb25
-  //  ylow.push_back(0.); //T2tt_2j_300_100_14T_PU50xb25
-  //  ylow.push_back(0.); //T2tt_2j_600_100_14T_PU50xb25
-  //  ylow.push_back(0.); //T2tt_2j_600_400_14T_PU50xb25
-  //  ylow.push_back(0.); //T1T1_2BC_350_100_14T_PU50xb25
+  ylow.push_back(0.); //T2tt_2j_300_100_14T_PU50xb25
+  ylow.push_back(0.); //T2tt_2j_600_100_14T_PU50xb25
+  ylow.push_back(0.); //T2tt_2j_600_400_14T_PU50xb25
+  ylow.push_back(0.); //T1T1_2BC_350_100_14T_PU50xb25
 
 
   vector<double> yhighel;
-  //  yhighel.push_back(45.); //T2bw_2j_300_150_14T_PU35
+  yhighel.push_back(45.); //T2bw_2j_300_150_14T_PU35
   yhighel.push_back(45.); //T2bw_2j_600_150_14T_PU35
   yhighel.push_back(45.); //T2bw_2j_600_450_14T_PU35
-  //  yhighel.push_back(45.); //T2tt_2j_300_100_14T_PU35
-  //  yhighel.push_back(45.); //T2tt_2j_600_100_14T_PU35
-  //  yhighel.push_back(45.); //T2tt_2j_600_400_14T_PU35
-  //  yhighel.push_back(45.); //T1T1_2BC_350_100_14T_PU35
-  //  yhighel.push_back(45.); //T2bw_2j_300_150_14T_PU50
+  yhighel.push_back(45.); //T2tt_2j_300_100_14T_PU35
+  yhighel.push_back(45.); //T2tt_2j_600_100_14T_PU35
+  yhighel.push_back(45.); //T2tt_2j_600_400_14T_PU35
+  yhighel.push_back(45.); //T1T1_2BC_350_100_14T_PU35
+  yhighel.push_back(45.); //T2bw_2j_300_150_14T_PU50
   yhighel.push_back(45.); //T2bw_2j_600_150_14T_PU50
   yhighel.push_back(45.); //T2bw_2j_600_450_14T_PU50
-  //  yhighel.push_back(45.); //T2tt_2j_300_100_14T_PU50
-  //  yhighel.push_back(45.); //T2tt_2j_600_100_14T_PU50
-  //  yhighel.push_back(45.); //T2tt_2j_600_400_14T_PU50
-  //  yhighel.push_back(45.); //T1T1_2BC_350_100_14T_PU50
-  //  yhighel.push_back(45.); //T2bw_2j_300_150_14T_PU50xb25 
+  yhighel.push_back(45.); //T2tt_2j_300_100_14T_PU50
+  yhighel.push_back(45.); //T2tt_2j_600_100_14T_PU50
+  yhighel.push_back(45.); //T2tt_2j_600_400_14T_PU50
+  yhighel.push_back(45.); //T1T1_2BC_350_100_14T_PU50
+  yhighel.push_back(45.); //T2bw_2j_300_150_14T_PU50xb25 
   yhighel.push_back(45.); //T2bw_2j_600_150_14T_PU50xb25 
   yhighel.push_back(45.); //T2bw_2j_600_450_14T_PU50xb25 
-  //  yhighel.push_back(45.); //T2tt_2j_300_100_14T_PU50xb25 
-  //  yhighel.push_back(45.); //T2tt_2j_600_100_14T_PU50xb25 
-  //  yhighel.push_back(45.); //T2tt_2j_600_400_14T_PU50xb25 
-  //  yhighel.push_back(45.); //T1T1_2BC_350_100_14T_PU50xb25 
+  yhighel.push_back(45.); //T2tt_2j_300_100_14T_PU50xb25 
+  yhighel.push_back(45.); //T2tt_2j_600_100_14T_PU50xb25 
+  yhighel.push_back(45.); //T2tt_2j_600_400_14T_PU50xb25 
+  yhighel.push_back(45.); //T1T1_2BC_350_100_14T_PU50xb25 
 
   vector<double> yhighmu;
-  //  yhighmu.push_back(30.); //T2bw_2j_300_150_14T_PU35
+  yhighmu.push_back(30.); //T2bw_2j_300_150_14T_PU35
   yhighmu.push_back(30.); //T2bw_2j_600_150_14T_PU35
   yhighmu.push_back(30.); //T2bw_2j_600_450_14T_PU35
-  //  yhighmu.push_back(30.); //T2tt_2j_300_100_14T_PU35
-  //  yhighmu.push_back(30.); //T2tt_2j_600_100_14T_PU35
-  //  yhighmu.push_back(30.); //T2tt_2j_600_400_14T_PU35
-  //  yhighmu.push_back(30.); //T1T1_2BC_350_100_14T_PU35
-  //  yhighmu.push_back(30.); //T2bw_2j_300_150_14T_PU50
+  yhighmu.push_back(30.); //T2tt_2j_300_100_14T_PU35
+  yhighmu.push_back(30.); //T2tt_2j_600_100_14T_PU35
+  yhighmu.push_back(30.); //T2tt_2j_600_400_14T_PU35
+  yhighmu.push_back(30.); //T1T1_2BC_350_100_14T_PU35
+  yhighmu.push_back(30.); //T2bw_2j_300_150_14T_PU50
   yhighmu.push_back(30.); //T2bw_2j_600_150_14T_PU50
   yhighmu.push_back(30.); //T2bw_2j_600_450_14T_PU50
-  //  yhighmu.push_back(30.); //T2tt_2j_300_100_14T_PU50
-  //  yhighmu.push_back(30.); //T2tt_2j_600_100_14T_PU50
-  //  yhighmu.push_back(30.); //T2tt_2j_600_400_14T_PU50
-  //  yhighmu.push_back(30.); //T1T1_2BC_350_100_14T_PU50
-  //  yhighmu.push_back(30.); //T2bw_2j_300_150_14T_PU50xb25
+  yhighmu.push_back(30.); //T2tt_2j_300_100_14T_PU50
+  yhighmu.push_back(30.); //T2tt_2j_600_100_14T_PU50
+  yhighmu.push_back(30.); //T2tt_2j_600_400_14T_PU50
+  yhighmu.push_back(30.); //T1T1_2BC_350_100_14T_PU50
+  yhighmu.push_back(30.); //T2bw_2j_300_150_14T_PU50xb25
   yhighmu.push_back(30.); //T2bw_2j_600_150_14T_PU50xb25
   yhighmu.push_back(30.); //T2bw_2j_600_450_14T_PU50xb25
-  //  yhighmu.push_back(30.); //T2tt_2j_300_100_14T_PU50xb25
-  //  yhighmu.push_back(30.); //T2tt_2j_600_100_14T_PU50xb25
-  //  yhighmu.push_back(30.); //T2tt_2j_600_400_14T_PU50xb25
-  //  yhighmu.push_back(30.); //T1T1_2BC_350_100_14T_PU50xb25
+  yhighmu.push_back(30.); //T2tt_2j_300_100_14T_PU50xb25
+  yhighmu.push_back(30.); //T2tt_2j_600_100_14T_PU50xb25
+  yhighmu.push_back(30.); //T2tt_2j_600_400_14T_PU50xb25
+  yhighmu.push_back(30.); //T1T1_2BC_350_100_14T_PU50xb25
 
   vector<double> yhighjm;
-  //  yhighjm.push_back(160.); //T2bw_2j_300_150_14T_PU35
+  yhighjm.push_back(160.); //T2bw_2j_300_150_14T_PU35
   yhighjm.push_back(300.); //T2bw_2j_600_150_14T_PU35
   yhighjm.push_back(160.); //T2bw_2j_600_450_14T_PU35
-  //  yhighjm.push_back(160.); //T2tt_2j_300_100_14T_PU35
-  //  yhighjm.push_back(300.); //T2tt_2j_600_100_14T_PU35
-  //  yhighjm.push_back(160.); //T2tt_2j_600_400_14T_PU35
-  //  yhighjm.push_back(160.); //T1T1_2BC_350_100_14T_PU35
+  yhighjm.push_back(160.); //T2tt_2j_300_100_14T_PU35
+  yhighjm.push_back(300.); //T2tt_2j_600_100_14T_PU35
+  yhighjm.push_back(160.); //T2tt_2j_600_400_14T_PU35
+  yhighjm.push_back(160.); //T1T1_2BC_350_100_14T_PU35
 
-  //  yhighjm.push_back(160.); //T2bw_2j_300_150_14T_PU50
+  yhighjm.push_back(160.); //T2bw_2j_300_150_14T_PU50
   yhighjm.push_back(300.); //T2bw_2j_600_150_14T_PU50
   yhighjm.push_back(160.); //T2bw_2j_600_450_14T_PU50
-  //  yhighjm.push_back(160.); //T2tt_2j_300_100_14T_PU50
-  //  yhighjm.push_back(300.); //T2tt_2j_600_100_14T_PU50
-  //  yhighjm.push_back(160.); //T2tt_2j_600_400_14T_PU50
-  //  yhighjm.push_back(160.); //T1T1_2BC_350_100_14T_PU50
+  yhighjm.push_back(160.); //T2tt_2j_300_100_14T_PU50
+  yhighjm.push_back(300.); //T2tt_2j_600_100_14T_PU50
+  yhighjm.push_back(160.); //T2tt_2j_600_400_14T_PU50
+  yhighjm.push_back(160.); //T1T1_2BC_350_100_14T_PU50
 
-  //  yhighjm.push_back(160.); //T2bw_2j_300_150_14T_PU50xb25
+  yhighjm.push_back(160.); //T2bw_2j_300_150_14T_PU50xb25
   yhighjm.push_back(300.); //T2bw_2j_600_150_14T_PU50xb25
   yhighjm.push_back(160.); //T2bw_2j_600_450_14T_PU50xb25
-  //  yhighjm.push_back(160.); //T2tt_2j_300_100_14T_PU50xb25
-  //  yhighjm.push_back(300.); //T2tt_2j_600_100_14T_PU50xb25
-  //  yhighjm.push_back(160.); //T2tt_2j_600_400_14T_PU50xb25
-  //  yhighjm.push_back(160.); //T1T1_2BC_350_100_14T_PU50xb25
+  yhighjm.push_back(160.); //T2tt_2j_300_100_14T_PU50xb25
+  yhighjm.push_back(300.); //T2tt_2j_600_100_14T_PU50xb25
+  yhighjm.push_back(160.); //T2tt_2j_600_400_14T_PU50xb25
+  yhighjm.push_back(160.); //T1T1_2BC_350_100_14T_PU50xb25
 
   if( selection == "Trigger1D" ){
     rebin=2;
@@ -1529,8 +1526,6 @@ void basicPlots::getResults( TString HTBins, TString selection, int startNJet, i
 
   delete len;
 }
-
-
 
 
 

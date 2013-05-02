@@ -23,20 +23,55 @@ int main( int argc, char* argv[] )
 
   if( word == "printTables" ){
     vector<TString> LepSele;
-    LepSele.push_back("");
-    LepSele.push_back("iso");
-    LepSele.push_back("matchTrue");
+    //    LepSele.push_back("");
+    //   LepSele.push_back("iso");
+    //    LepSele.push_back("singleLep");
+   LepSele.push_back("matchTrue");
     vector<TString> whichdom;
-    whichdom.push_back("EleAndMu");
     //    whichdom.push_back("EleAndMu");
+   whichdom.push_back("MatchTrue");
+    //    whichdom.push_back("Iso");
+    //    whichdom.push_back("JetMHTEvo");
+
 
     printTables *table=new printTables();
     for( unsigned int ilep=0; ilep<LepSele.size(); ilep++){
       for( unsigned int idom=0; idom<whichdom.size(); idom++){
-	table->results(2, 1, "noCut_", LepSele[ilep], whichdom[idom] );
-	table->results(2, 5, "noCut_", LepSele[ilep], whichdom[idom] );
-	table->results_Simplified(2, 1, "noCut_", LepSele[ilep], whichdom[idom] );
-	table->results_Simplified(2, 5, "noCut_", LepSele[ilep], whichdom[idom] );
+	if( ( LepSele[ilep] == "matchTrue" ) && ( whichdom[idom] != "MatchTrue" && whichdom[idom] != "EleAndMu" ) ) continue;
+	if( ( LepSele[ilep] == "iso" ) && ( whichdom[idom] != "Iso" && whichdom[idom] != "EleAndMu" && whichdom[idom] != "JetMHTEvo") ) continue;
+	if( ( LepSele[ilep] == "" ) && ( whichdom[idom] != "All" && whichdom[idom] != "EleAndMu" ) ) continue;
+
+	//	table->results(2, 1, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results(2, 5, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results_Simplified(2, 1, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results_Simplified(2, 5, "noCut_", LepSele[ilep], whichdom[idom] );
+
+	//	table->results(2, 17, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results(2, 21, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results_Simplified(2, 17, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results_Simplified(2, 21, "noCut_", LepSele[ilep], whichdom[idom] );
+
+	//	table->results(2, 17, "noCut_", LepSele[ilep], whichdom[idom] );
+	//        table->results(2, 21, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results(2, 33, "noCut_", LepSele[ilep], whichdom[idom] );
+	//        table->results(2, 37, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results_Simplified(2, 17, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results_Simplified(2, 21, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results_Simplified(2, 33, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results_Simplified(2, 37, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results(2, 49, "noCut_", LepSele[ilep], whichdom[idom] );
+	//	table->results(2, 53, "noCut_", LepSele[ilep], whichdom[idom] );
+	//      	table->results_Simplified(2, 49, "noCut_", LepSele[ilep], whichdom[idom] );
+	//       	table->results_Simplified(2, 53, "noCut_", LepSele[ilep], whichdom[idom] );
+	//      	table->results_Simplified(2, 65, "noCut_", LepSele[ilep], whichdom[idom] );
+	//       	table->results_Simplified(2, 69, "noCut_", LepSele[ilep], whichdom[idom] );
+	//      	table->results(2, 65, "noCut_", LepSele[ilep], whichdom[idom] );
+	//       	table->results(2, 69, "noCut_", LepSele[ilep], whichdom[idom] );
+
+      	table->results_Simplified(2, 113, "noCut_", LepSele[ilep], whichdom[idom] );
+       	table->results_Simplified(2, 117, "noCut_", LepSele[ilep], whichdom[idom] );
+      	table->results(2, 113, "noCut_", LepSele[ilep], whichdom[idom] );
+       	table->results(2, 117, "noCut_", LepSele[ilep], whichdom[idom] );
       }
     }
   }
@@ -55,10 +90,11 @@ int main( int argc, char* argv[] )
     vector<TString> LepSele;
     //    LepSele.push_back("");
     LepSele.push_back("iso");
-    LepSele.push_back("matchTrue");
+    //    LepSele.push_back("matchTrue");
     vector<TString> whichdom;
-    whichdom.push_back("EleAndMu");
-
+    //    whichdom.push_back("EleAndMu");
+    //    whichdom.push_back("JetMHTEvo");
+    whichdom.push_back("Iso");
 
 
     int n=15;
@@ -82,6 +118,9 @@ int main( int argc, char* argv[] )
 	    if( ( startNJet[i] - 1 ) > folder_n[il] ) continue;
 	    for( unsigned int ilep=0; ilep<LepSele.size(); ilep++){
 	      for( unsigned int idom=0; idom<whichdom.size(); idom++){
+		if( ( LepSele[ilep] == "matchTrue" ) && ( whichdom[idom] != "MatchTrue" && whichdom[idom] != "EleAndMu" ) ) continue;
+		if( ( LepSele[ilep] == "iso" ) && ( whichdom[idom] != "Iso" && whichdom[idom] != "EleAndMu" && whichdom[idom] != "JetMHTEvo") ) continue;
+		if( ( LepSele[ilep] == "" ) && ( whichdom[idom] != "All" && whichdom[idom] != "EleAndMu" ) ) continue;
 		basicPlots *bp=new basicPlots();
 		bp->getResults(HTBins[ibin], "Trigger", startNJet[i], nJet[i], "", folder[il], LepSele[ilep], whichdom[idom] );
 	    //	    delete bp;
@@ -100,6 +139,9 @@ int main( int argc, char* argv[] )
 	    if( ( startNJet[i] - 1 ) > folder_n[il] ) continue;
 	    for( unsigned int ilep=0; ilep<LepSele.size(); ilep++){
 	      for( unsigned int idom=0; idom<whichdom.size(); idom++){
+	if( ( LepSele[ilep] == "matchTrue" ) && ( whichdom[idom] != "MatchTrue" && whichdom[idom] != "EleAndMu" ) ) continue;
+	if( ( LepSele[ilep] == "iso" ) && ( whichdom[idom] != "Iso" && whichdom[idom] != "EleAndMu" && whichdom[idom] != "JetMHTEvo") ) continue;
+	if( ( LepSele[ilep] == "" ) && ( whichdom[idom] != "All" && whichdom[idom] != "EleAndMu" ) ) continue;
 		basicPlots *bp=new basicPlots();
 		bp->getResults(HTBins[ibin], "Trigger1D", startNJet[i], nJet[i], "", folder[il], LepSele[ilep], whichdom[idom] );
 	    //	    delete bp;
