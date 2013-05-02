@@ -61,6 +61,10 @@ class vectors{
   std::vector<double> PhotonTrigEff_pushback(TString sTreeThr);
   std::vector<double> nominaltrigeff_pushback(TString sTreeThr);
   TH1D* fillFitHist( TString sTreeThr, int startNjet, int nJets, TString MuonNumber, TString FolderLable  );
+  std::vector<double> HTBinEdges( TString HTBin );
+  int ibinWithCertainHT( TH1D* h, TString HTBin );
+
+
   std::vector<TFile*> vf;
   std::vector<TFile*> vfdata;
   std::vector<TFile*> vf_save;

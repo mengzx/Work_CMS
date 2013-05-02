@@ -609,6 +609,42 @@ std::vector<double> vectors::DiMuTrigEff_pushback(TString sTreeThr){
 }
 
 
+std::vector<double> vectors::HTBinEdges( TString sTreeThr ){
+  std::vector<double> re;
+  if( sTreeThr == "100" || sTreeThr == "highHTBins" ){ re.push_back( 375. ); re.push_back( 975. ); }
+  else if( sTreeThr == "86" || sTreeThr == "325" ){ re.push_back( 325. ); re.push_back( 375. ); }
+  else if( sTreeThr == "73" || sTreeThr == "275" ){ re.push_back( 275. ); re.push_back( 325. ); }
+  else if( sTreeThr == "60" || sTreeThr == "225" ){ re.push_back( 225. ); re.push_back( 275. ); }
+  else if( sTreeThr == "0" ){ re.push_back( 0. ); re.push_back( 975. ); }
+  else if( sTreeThr == "375" ){ re.push_back( 375. ); re.push_back( 475. ); }
+  else if( sTreeThr == "475" ){ re.push_back( 475. ); re.push_back( 575. ); }
+  else if( sTreeThr == "575" ){ re.push_back( 575. ); re.push_back( 675. ); }
+  else if( sTreeThr == "675" ){ re.push_back( 675. ); re.push_back( 775. ); }
+  else if( sTreeThr == "775" ){ re.push_back( 775. ); re.push_back( 875. ); }
+  else if( sTreeThr == "875" ){ re.push_back( 875. ); re.push_back( 975. ); }
+  else if( sTreeThr == "all" || sTreeThr == "allHTBins" ){ re.push_back( 275. ); re.push_back( 975. ); }
+  else if ( sTreeThr == "low" || sTreeThr == "lowHTBins" ){ re.push_back( 275. ); re.push_back( 375. ); }
+  else if ( sTreeThr == "test" ){ re.push_back( 0. ); re.push_back(0. ); }
+  return re;
+}
+
+int vectors::ibinWithCertainHT( TH1D* h, TString HTBin ){
+
+  std::vector<double> htbinE = HTBinEdges( HTBin );
+  for( unsigned int i=1; i <= h->GetNbinsX(); i++ ){
+    double binlow=h->GetBinLowEdge(i);
+    double binhigh=h->GetBinLowEdge(i) + h->GetBinWidth(i);
+    if( (int)( binlow * 10. ) == (int)( htbinE[0] * 10. ) && (int)( binhigh *10. ) == (int)( htbinE[1] *10. ) ) return i;
+  }
+  return 0;
+}
+
+
+
+
+
+
+
 
 
 

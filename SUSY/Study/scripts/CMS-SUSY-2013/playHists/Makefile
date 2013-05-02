@@ -9,7 +9,22 @@ HEADERDIR	= ./
 
 MAKE	=	make
 
-object	=	menus.o vectors.o plots.o ratioPlots.o dataMC.o printTables.o QCDk.o TrueWPt.o getPUWeight.o getTranslationFactor.o BGCompositions.o closureTests.o getRootFiles.o
+object	=	menus.o
+object	+=	vectors.o
+object	+=	NBjets.o
+object	+=	plots.o
+object	+=	ratioPlots.o
+object	+=	dataMC.o
+object	+=	printTables.o
+object	+=	QCDk.o
+object	+=	TrueWPt.o
+object	+=	getPUWeight.o
+object	+=	getTranslationFactor.o
+object	+=	BGCompositions.o
+object	+=	closureTests.o
+object	+=	getRootFiles.o
+
+
 
 objectFramWork	=	tdrstyle.o playHist2D.o playHist1D.o playTables.o project2DHists.o menus_base.o rootdict.o basicPlots.o
 
@@ -26,11 +41,13 @@ main.exe:main.C
 	g++ -O3 -Wall -I $(ROOTCFLAGS) $^ -o $@ $(object) $(objectFramWork) -I . -I $(SOURCEDIR)  -I $(HEADERDIR) $(ROOTLIBS)
 
 echo:
+	echo "object=$(object)"
 	echo "ROOTCFLAGS=$(ROOTCFLAGS)"
 	echo "ROOTLIBS=$(ROOTLIBS)"
 	echo "ROOTSYS=$(ROOTSYS)"
 	echo "PATH=$(PATH)"
 	echo "LD_LIBRARY_PATH=$(LD_LIBRARY_PATH)"
+.PHONY : echo
 
 .PHONY : clean
 clean: 

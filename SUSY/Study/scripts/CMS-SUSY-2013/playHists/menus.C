@@ -8,6 +8,7 @@
 
 menus::menus(){
 
+  drawAsGraph_=false;
   debug_=-1;
   testHTBin_="";
   testMCFile_="";
@@ -68,21 +69,35 @@ menus::menus(){
   hasT2cc220_195_=false;
 
   hasT2cc_NoFilter_combined200_190_=T;
-  hasT2cc_NoFilter_combined200_180_=F;
-  hasT2cc_NoFilter_combined200_170_=F;
+  hasT2cc_NoFilter_combined200_180_=T;
+  hasT2cc_NoFilter_combined200_170_=T;
   hasT2cc_NoFilter_combined200_160_=T;
-  hasT2cc_NoFilter_combined200_140_=F;
+  hasT2cc_NoFilter_combined200_140_=T;
   hasT2cc_NoFilter_combined200_120_=T;
   hasT2cc_3jets_mStop_200_mLSP_190_=F;
   hasT2cc_3jets_mStop_200_mLSP_120_=F;
+
+  hasSMS_Madgraph_T2cc_NoFilter_combined100_90_ = F;
+  hasSMS_Madgraph_T2cc_NoFilter_combined150_140_ = F;
+  hasSMS_Madgraph_T2cc_NoFilter_combined200_190_ = F;
+  hasSMS_Madgraph_T2cc_NoFilter_combined250_240_ = F;
+
+  hasSMS_MadGraph_T1bbbb_2J_mGo_400to750_mLSP_0to700600_550_=F;
+  hasSMS_MadGraph_T1bbbb_2J_mGo_400to750_mLSP_0to700600_500_=F;
+  hasSMS_MadGraph_T1bbbb_2J_mGo_400to750_mLSP_0to700600_450_=F;
+  hasSMS_MadGraph_T1bbbb_2J_mGo_400to750_mLSP_0to700600_400_=F;
+  hasSMS_MadGraph_T1bbbb_2J_mGo_400to750_mLSP_0to700600_350_=F;
+  hasSMS_MadGraph_T1bbbb_2J_mGo_400to750_mLSP_0to700600_300_=F;
 
   totalEV_=1000;
   TString period="";
   //  inidir_="/Users/phxzm/Work_CMS/SUSY/ForICHEP2012/myppt/TenthLookAt8TeVData_AimToICHEP_ForAproval27062012_25062012/";
   //  inidir_="/Users/phxzm/Work_CMS/SUSY/myppt/EightTeV2012/SeventeenthLook_25_Sep2012/";
   //  subdir_="/allBJets_PUReWNoTopLimi_Has2To3Jets_BScaleCorr";
-  inidir_="/Users/phxzm/Work_CMS/SUSY/myppt/EightTeV2012/EighteenthLook_17_Dec2012/";
-  subdir_="/allBJets_T2ccISRFSR_MoreDetailed";
+  inidir_="/Users/phxzm/Work_CMS/SUSY/myppt/EightTeV2012/SeventeenthLook_25_Sep2012/";
+  //  subdir_="/allBJets_T1bbbbISRFSR_NewMatch";
+  subdir_="/allBJets_PUReWNoTopLimi_Has2To3Jets_BScaleCorr";
+
   //  subdir_="/allBJets";
   //  HadTaudataset_="SingleMu2012";
   NotHadTaudataset_="HT2012"+period;

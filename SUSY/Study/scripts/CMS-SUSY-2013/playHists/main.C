@@ -8,7 +8,7 @@
 #include "TrueWPt.h"
 #include "printTables.h"
 #include "QCDk.h"
-//#include "NBjets.h"
+#include "NBjets.h"
 #include "BGCompositions.h"
 #include <TH2.h>
 #include <TStyle.h>
@@ -30,6 +30,49 @@ int main( int argc, char* argv[] )
 {
 
   std::string word = argv[1];
+
+  if( word == "NBjets" ){
+    vector<TString> folder;
+    folder.push_back("MoreThreeJet_");
+    folder.push_back("TwoThreeJet_");
+
+    vector<int> folder_n;
+    folder_n.push_back(10);
+    folder_n.push_back(10);
+    folder_n.push_back(10);
+    folder_n.push_back(10);
+    folder_n.push_back(10);
+
+    vector<TString> HTBins;
+    HTBins.push_back("275");
+    HTBins.push_back("325");
+
+    int n=15;
+    int startNJet[16]={2, 3, 2, 4, 4, 5, 6, 0, 1, 2, 3, 4, 5, 2, 5, 4};
+    int nJet[16]     ={1, 1, 2, n-4+2, 1, 1, 1, 0, 1, 1, 1, 1, 1, n-2+2, n-5+2, n-4+2 };
+    int start = 7;
+    int end = 8;
+
+    menus *listmenus=new menus();
+    if( !(listmenus->useBTag_) ){
+      start = 0;
+      end = 8;
+    }
+
+    for( int i=start; i< end; i++){
+      for( unsigned int ibin=0; ibin<HTBins.size();ibin++){
+	for( unsigned int il=0; il<folder.size(); il++){ 
+	  if( HTBins[ibin] == "0" && folder[il] != "noCut_") continue;
+	  if( HTBins[ibin] != "0" && folder[il] == "noCut_") continue;
+	  cout<<  startNJet[i] - 1 << " *****  " << folder_n[il] <<endl;
+	  if( ( startNJet[i] - 1 ) > folder_n[il] ) continue;
+	  NBjets *bp=new NBjets();
+	  bp->getResults(HTBins[ibin], "", startNJet[i], nJet[i], folder[il] );
+	}
+      }
+    }
+  }
+
 
   if( word == "getRootFiles" ){
     vector<TString> FolderLabel;
@@ -141,7 +184,7 @@ int main( int argc, char* argv[] )
 
  if( (int)( word.find("plots") ) >= 0  ){
     vector<TString> folder;
-    //    folder.push_back("noCut_");
+    folder.push_back("noCut_");
     folder.push_back("");
     folder.push_back("MoreThreeJet_");
     folder.push_back("ThreeJet_");
@@ -159,7 +202,7 @@ int main( int argc, char* argv[] )
     HTBins.push_back("275");
     HTBins.push_back("325");
     HTBins.push_back("highHTBins");
-    //    HTBins.push_back("0");
+    HTBins.push_back("0");
 
     int n=15;
     int startNJet[16]={2, 3, 2, 4, 4, 5, 6, 0, 1, 2, 3, 4, 5, 2, 5, 4};
@@ -177,7 +220,8 @@ int main( int argc, char* argv[] )
       for( int i=start; i< end; i++){
 	for( unsigned int ibin=0; ibin<HTBins.size();ibin++){
 	  for( unsigned int il=0; il<folder.size(); il++){ 
-	    if( folder[il] == "noCut_" && HTBins[ibin] != "0") continue;
+	    if( HTBins[ibin] == "0" && folder[il] != "noCut_") continue;
+	    if( HTBins[ibin] != "0" && folder[il] == "noCut_") continue;
 	    cout<<  startNJet[i] - 1 << " *****  " << folder_n[il] <<endl;
 	    if( ( startNJet[i] - 1 ) > folder_n[il] ) continue;
 	    plots *bp=new plots();
@@ -191,27 +235,34 @@ int main( int argc, char* argv[] )
 
   if( (int)( word.find("ratioPlots") ) >= 0  ){
     vector<TString> folder;
-    //    folder.push_back("noCut_");
+    folder.push_back("noCut_");
     folder.push_back("");
     folder.push_back("MoreThreeJet_");
     folder.push_back("ThreeJet_");
     folder.push_back("TwoJet_");
+    folder.push_back("TwoThreeJet_");
 
     vector<int> folder_n;
     folder_n.push_back(10);
+    folder_n.push_back(10);
+    folder_n.push_back(10);
+    folder_n.push_back(10);
+    folder_n.push_back(10);
+    folder_n.push_back(10);
 
     vector<TString> HTBins;
-    //    HTBins.push_back("0");
+    HTBins.push_back("0");
     HTBins.push_back("all");
     HTBins.push_back("275");
     HTBins.push_back("325");
     HTBins.push_back("highHTBins");
+    HTBins.push_back("lowHTBins");
 
     int n=15;
     int startNJet[16]={2, 3, 2, 4, 4, 5, 6, 0, 1, 2, 3, 4, 5, 2, 5, 4};
     int nJet[16]     ={1, 1, 2, n-4+2, 1, 1, 1, 0, 1, 1, 1, 1, 1, n-2+2, n-5+2, n-4+2 };
     int start = 7;
-    int end = 8;
+    int end = 10;
 
     menus *listmenus=new menus();
     if( !(listmenus->useBTag_) ){
@@ -225,6 +276,8 @@ int main( int argc, char* argv[] )
 	  for( unsigned int il=0; il<folder.size(); il++){ 
 	    cout<<  startNJet[i] - 1 << " *****  " << folder_n[il] <<endl;
 	    if( ( startNJet[i] - 1 ) > folder_n[il] ) continue;
+	    if( HTBins[ibin] == "0" && folder[il] != "noCut_") continue;
+	    if( HTBins[ibin] != "0" && folder[il] == "noCut_") continue;
 	    ratioPlots *bp=new ratioPlots();
 	    bp->getResults(HTBins[ibin], "HadSele", startNJet[i], nJet[i], "", folder[il] );
 	    delete bp;
@@ -426,10 +479,6 @@ int main( int argc, char* argv[] )
     WPt->getResults();
   }
 
-  /*  if( word == "NBjets" ){
-    NBjets *nb=new NBjets();
-    nb->getResults();
-    }*/
 
 
   return 0;

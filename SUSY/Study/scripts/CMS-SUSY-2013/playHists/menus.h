@@ -12,6 +12,7 @@ class menus{
   menus();
   ~menus(){;}
 
+  bool drawAsGraph_;
   int debug_;
   TString testHTBin_;
   TString testMCFile_;
@@ -97,6 +98,18 @@ class menus{
   bool hasT2cc_NoFilter_combined200_120_;
   bool hasT2cc_3jets_mStop_200_mLSP_190_;
   bool hasT2cc_3jets_mStop_200_mLSP_120_;
+
+  bool hasSMS_MadGraph_T1bbbb_2J_mGo_400to750_mLSP_0to700600_550_;
+  bool hasSMS_MadGraph_T1bbbb_2J_mGo_400to750_mLSP_0to700600_500_;
+  bool hasSMS_MadGraph_T1bbbb_2J_mGo_400to750_mLSP_0to700600_450_;
+  bool hasSMS_MadGraph_T1bbbb_2J_mGo_400to750_mLSP_0to700600_400_;
+  bool hasSMS_MadGraph_T1bbbb_2J_mGo_400to750_mLSP_0to700600_350_;
+  bool hasSMS_MadGraph_T1bbbb_2J_mGo_400to750_mLSP_0to700600_300_;
+
+  bool hasSMS_Madgraph_T2cc_NoFilter_combined100_90_;
+  bool hasSMS_Madgraph_T2cc_NoFilter_combined150_140_;
+  bool hasSMS_Madgraph_T2cc_NoFilter_combined200_190_;
+  bool hasSMS_Madgraph_T2cc_NoFilter_combined250_240_;
 
   TString inidir_;
   TString subdir_;

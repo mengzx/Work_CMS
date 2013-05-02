@@ -76,32 +76,17 @@ vector<TH1D*> plots::getHists( bool MuAddOrNot, TString HTBins, int whichpart, i
       vh.push_back( Datah );
     }
   } else if( OneDTwoD == 2 ) {
-    if( axis == "Y" ){
-      if( dataMC == 1 ){
-	Datah=bp.Hist2D( Datavf, vdirname, vhname, datascale_, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, lowy, highy, "Y", nominaltrigeff );
-	vh.push_back( Datah );
-      } else if( dataMC == 2 ){
-	MCh=bp.Hist2D(  MCvf, vdirname, vhname, mcscale, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, lowy, highy, "Y", trigeff );
-	vh.push_back( MCh );
-      } else if( dataMC == 0){
-	MCh=bp.Hist2D(  MCvf, vdirname, vhname, mcscale, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, lowy, highy, "Y", trigeff );
-	vh.push_back( MCh );
-	Datah=bp.Hist2D( Datavf, vdirname, vhname, datascale_, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, lowy, highy, "Y", nominaltrigeff );
-	vh.push_back( Datah );
-      }
-    } else {
-      if( dataMC == 1 ){
-	Datah=bp.Hist2D( Datavf, vdirname, vhname, datascale_, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, lowy, highy, "X", nominaltrigeff );
-	vh.push_back( Datah );
-      } else if( dataMC == 2 ){
-	MCh=bp.Hist2D(  MCvf, vdirname, vhname, mcscale, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, lowy, highy, "X", trigeff );
-	vh.push_back( MCh );
-      } else if( dataMC == 0){
-	MCh=bp.Hist2D(  MCvf, vdirname, vhname, mcscale, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, lowy, highy, "X", trigeff );
-	vh.push_back( MCh );
-	Datah=bp.Hist2D( Datavf, vdirname, vhname, datascale_, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, lowy, highy, "X", nominaltrigeff );
-	vh.push_back( Datah );
-      }
+    if( dataMC == 1 ){
+      Datah=bp.Hist2D( Datavf, vdirname, vhname, datascale_, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, lowy, highy, axis, nominaltrigeff );
+      vh.push_back( Datah );
+    } else if( dataMC == 2 ){
+      MCh=bp.Hist2D(  MCvf, vdirname, vhname, mcscale, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, lowy, highy, axis, trigeff );
+      vh.push_back( MCh );
+    } else if( dataMC == 0){
+      MCh=bp.Hist2D(  MCvf, vdirname, vhname, mcscale, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, lowy, highy, axis, trigeff );
+      vh.push_back( MCh );
+      Datah=bp.Hist2D( Datavf, vdirname, vhname, datascale_, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, lowy, highy, axis, nominaltrigeff );
+      vh.push_back( Datah );
     }
   }
   return vh;
@@ -148,14 +133,14 @@ void plots::drawHists( bool MuAddOrNot, TString HTBins, int whichpart, int rebin
   }
 
   if( hasT2cc_NoFilter_combined200_140_ ){
-    vlenname.push_back("T2cc (200, 140)");    vhnames.push_back("T2cc_NoFilter_combined200_140");    vcolor.push_back(kCyan);    vh_special.push_back(1); vh_linestype.push_back(1);
+    vlenname.push_back("T2cc (200, 140)");    vhnames.push_back("T2cc_NoFilter_combined200_140");    vcolor.push_back(kCyan+1);    vh_special.push_back(1); vh_linestype.push_back(1);
     TH1D *MCh_T1tttt= (getHists( MuAddOrNot, HTBins, whichpart, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, 2, whichplot, true, "SMS_Madgraph_T2cc_NoFilter_combined200_140", lowy, highy, OneDTwoD, startNJet, nJets, MuonNumber, FolderLabel, axis  ))[0];
     MCh_T1tttt->Scale(1./(568158/18524.5*10.));
     vh.push_back(MCh_T1tttt);
   }
 
   if( hasT2cc_NoFilter_combined200_120_ ){
-    vlenname.push_back("T2cc (200, 120)");    vhnames.push_back("T2cc_NoFilter_combined200_120");    vcolor.push_back(kGreen);    vh_special.push_back(1); vh_linestype.push_back(1);
+    vlenname.push_back("T2cc (200, 120)");    vhnames.push_back("T2cc_NoFilter_combined200_120");    vcolor.push_back(kGreen+2);    vh_special.push_back(1); vh_linestype.push_back(1);
     TH1D *MCh_T1tttt= (getHists( MuAddOrNot, HTBins, whichpart, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, 2, whichplot, true, "SMS_Madgraph_T2cc_NoFilter_combined200_120", lowy, highy, OneDTwoD, startNJet, nJets, MuonNumber, FolderLabel, axis  ))[0];
     MCh_T1tttt->Scale(1./(630587/18524.5*10.));
     cout<<whichplot <<"="<<MCh_T1tttt->Integral(1,100000) <<" 200, 120 "<<MCh_T1tttt->Integral(2,100000)<<endl;
@@ -170,7 +155,7 @@ void plots::drawHists( bool MuAddOrNot, TString HTBins, int whichpart, int rebin
   }
 
   if( hasT2cc_3jets_mStop_200_mLSP_120_ ){
-    vlenname.push_back("T2cc_3p (200, 120)");    vhnames.push_back("T2cc_3jets_mStop_200_mLSP_120");    vcolor.push_back(kGreen);    vh_special.push_back(1); vh_linestype.push_back(2);
+    vlenname.push_back("T2cc_3p (200, 120)");    vhnames.push_back("T2cc_3jets_mStop_200_mLSP_120");    vcolor.push_back(kGreen+2);    vh_special.push_back(1); vh_linestype.push_back(2);
     TH1D *MCh_T1tttt= (getHists( MuAddOrNot, HTBins, whichpart, rebin, xAxisName, yAxisName, xAxisRange1, xAxisRange2, 2, whichplot, true, "T2cc_3jets_mStop_200_mLSP_120", lowy, highy, OneDTwoD, startNJet, nJets, MuonNumber, FolderLabel, axis ))[0];
     MCh_T1tttt->Scale(1./(620669/18524.5*10.));
     vh.push_back(MCh_T1tttt);
@@ -218,11 +203,14 @@ void plots::drawHists( bool MuAddOrNot, TString HTBins, int whichpart, int rebin
     svh0clone->SetMarkerColor(0);
     svh0clone->Draw();
     svh0clone->GetXaxis()->SetLabelFont(63);
-    svh0clone->GetXaxis()->SetLabelSize(18);
+    svh0clone->GetXaxis()->SetLabelSize(34);
+    svh0clone->GetXaxis()->SetLabelOffset(0.013);
     svh0clone->GetYaxis()->SetLabelFont(63);
-    svh0clone->GetYaxis()->SetLabelSize(18);
-    svh0clone->GetXaxis()->SetTitleSize(0.06);
-    svh0clone->GetYaxis()->SetTitleSize(0.06);
+    svh0clone->GetYaxis()->SetLabelSize(34);
+    svh0clone->GetYaxis()->SetTitleOffset(1.4);
+    svh0clone->GetXaxis()->SetTitleOffset(1.4);
+    svh0clone->GetXaxis()->SetTitleSize(0.048);
+    svh0clone->GetYaxis()->SetTitleSize(0.048);
     svh0clone->SetMinimum(0.5);
 
     if( !drawStack_ ){
@@ -233,8 +221,8 @@ void plots::drawHists( bool MuAddOrNot, TString HTBins, int whichpart, int rebin
       }
 
       gStyle->SetPaintTextFormat(".0f");
-      TString DrawOpt="same 9 text45";
-      //      TString DrawOpt="same 9 hist";
+      //      TString DrawOpt="same 9 text45";
+      TString DrawOpt="same 9 hist";
       for( unsigned int i=0; i<svh.size(); i++ ){
 	svh[i]->SetLineWidth(4);
 	if( vhnames[ svh_index[i] ] != "Data" && vhnames[ svh_index[i] ] != "MCtotal"){
@@ -580,16 +568,23 @@ void plots::getResults( TString HTBins, TString selection, int startNJet, int nJ
   double higATcut=10.;
   int dim=1;
   if( selection == "HadSele"){
-    lowATcut=0.55;
+    lowATcut=0;
     higATcut=10.;
-    rebin=10;
+    rebin=1;
+    //    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "ISR #eta", "", -5, 5, "isrEta", len, lowATcut, higATcut, dim, startNJet, nJets, MuonNumber, FolderLabel, "" );
+    //    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "Add. ISR #eta", "", -5, 5, "isr2ndEta", len, lowATcut, higATcut, dim, startNJet, nJets, MuonNumber, FolderLabel, "" );
+    //    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "sparticle decay products #eta", "", -5, 5, "charmEta", len, lowATcut, higATcut, dim, startNJet, nJets, MuonNumber, FolderLabel, "" );
+    //    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "Add. ISR p_{T} (GeV)", "", 0, 500., "isr2ndPt", len, lowATcut, higATcut, dim, startNJet, nJets, MuonNumber, FolderLabel, "" );
+    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "ISR p_{T} (GeV)", "", 0, 500., "isrPt", len, lowATcut, higATcut, dim, startNJet, nJets, MuonNumber, FolderLabel, "" );
+
+
     /*    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "ISR p_{T} (GeV)", "", 0, 800, "isrPt", len, lowATcut, higATcut, dim, startNJet, nJets, MuonNumber, FolderLabel, "" );
     drawHists( MuAddOrNot, HTBins, whichpart, rebin, "Charm p_{T} (GeV)", "", 0, 300, "charmPt", len, lowATcut, higATcut, dim, startNJet, nJets, MuonNumber, FolderLabel, "" );
     rebin=1;
+    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "#Delta p_{T}/p_{T}^{true} (Additional ISR)", "", -1.5, 1.5, "dPtRatio2ndIsrRecoJet", len, lowATcut, higATcut, dim, startNJet, nJets, MuonNumber, FolderLabel, "" );
 
     drawHists( MuAddOrNot, HTBins, whichpart, rebin, "#Delta p_{T}/p_{T}^{true} (Charm)", "", -1.5, 1.5, "dPtRatioCharmRecoJet", len, lowATcut, higATcut, dim, startNJet, nJets, MuonNumber, FolderLabel, "" );
     drawHists( MuAddOrNot, HTBins, whichpart, rebin, "#Delta p_{T}/p_{T}^{true} (ISR)", "", -1.5, 1.5, "dPtRatioIsrRecoJet", len, lowATcut, higATcut, dim, startNJet, nJets, MuonNumber, FolderLabel, "" );
-    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "#Delta p_{T}/p_{T}^{true} (Additional ISR)", "", -1.5, 1.5, "dPtRatio2ndIsrRecoJet", len, lowATcut, higATcut, dim, startNJet, nJets, MuonNumber, FolderLabel, "" );
 
     rebin=4;
     drawHists( MuAddOrNot, HTBins, whichpart, rebin, "#Delta R (Charm, reco-jet)", "", 0, 2, "dRCharmRecoJet", len, lowATcut, higATcut, dim, startNJet, nJets, MuonNumber, FolderLabel, "" );
@@ -646,7 +641,11 @@ void plots::getResults( TString HTBins, TString selection, int startNJet, int nJ
     */
 
     rebin=1;
-    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "All 1^{st} leading jet p_{T} (GeV)", "", 0, jetpT, "PtJetAllRecoJet", len, 0, 10000, dim, startNJet, nJets, MuonNumber, FolderLabel, "X" );
+    //    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "All 1^{st} leading jet p_{T} (GeV)", "", 0, jetpT, "PtJetAllRecoJet", len, 0, 10000, dim, startNJet, nJets, MuonNumber, FolderLabel, "X" );
+
+    //    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "Number of vertex", "", 0, jetpT, "AllRecoJetPt1stvsNVtx", len, 0, 10000, dim, startNJet, nJets, MuonNumber, FolderLabel, "X" );
+    //    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "Number of vertex", "2^{nd} leading jet (GeV)", 0, jetpT, "otherRecoJetPt2ndvsNVtx", len, 0, 10000, dim, startNJet, nJets, MuonNumber, FolderLabel, "Y" );
+    //    drawHists( MuAddOrNot, HTBins, whichpart, rebin, "Number of vertex", "3^{rd} leading jet (GeV)", 0, jetpT, "otherRecoJetPt3rdvsNVtx", len, 0, 10000, dim, startNJet, nJets, MuonNumber, FolderLabel, "Y" );
 
   }
 
